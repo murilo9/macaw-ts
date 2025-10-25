@@ -4,7 +4,7 @@ import { Room } from "./core/room/Room";
 import type { GameConfig } from "./core/GameConfig";
 
 const gameConfig: GameConfig = {
-  initialRoom: new Room(),
+  initialRoom: new Room([]),
 };
 
 function App() {

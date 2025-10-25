@@ -3,17 +3,19 @@ import type { Game } from "../Game";
 
 export class Room {
   entities: Array<Entity>;
-  private game: Game;
+  private game: Game | null;
 
-  constructor(game: Game, initialEntities: Array<Entity> = []) {
-    this.game = game;
+  constructor(initialEntities: Array<Entity> = []) {
     this.entities = initialEntities;
+    this.game = null;
   }
 
   /**
    * Executed when this room becomes the current room through Game's setCurrentRoom method.
    */
-  public onInit(game: Game) {}
+  public onInit(game: Game) {
+    this.game = game;
+  }
 
   /**
    * Executed when this room stops being the current room, when a new room is passed to Game's setCurrentRoom method.
@@ -27,7 +29,14 @@ export class Room {
 
   public appendEntity(entity: Entity) {
     this.entities.push(entity);
-    entity.onInit(this.game);
+    if (this.game) {
+      entity.onInit(this.game);
+    } else {
+      console.warn(
+        "A room is appending an entity without having a game reference. Was this room started?",
+        this
+      );
+    }
   }
 
   public removeEntity(entityOrId: Entity | string) {
