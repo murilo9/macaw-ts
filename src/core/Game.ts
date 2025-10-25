@@ -18,6 +18,8 @@ export class Game {
     if (this.isRunning) return;
     this.isRunning = true;
 
+    this.technicalSetup();
+
     this.lastLogicExecution = performance.now();
     // Starts the render loop at browser screen refresh rate
     requestAnimationFrame(this.renderLoop.bind(this));
@@ -25,6 +27,7 @@ export class Game {
 
   public stop() {
     this.isRunning = false;
+    this.technicalCleanup();
   }
 
   /** Main render loop (drives both render + conditional logic updates) */
@@ -46,7 +49,7 @@ export class Game {
   }
 
   /**
-   *
+   * Logic loop
    * @param dt Amount of time (in seconds) since the last logic loop
    */
   private processEntities(dt: number) {
@@ -56,6 +59,9 @@ export class Game {
     }
   }
 
+  /**
+   * Draws graphic entities on the canvas
+   */
   private renderFrame() {
     for (let i = this.currentRoom.entities.length - 1; i >= 0; i--) {
       if (this.currentRoom.entities[i]._is("Graphic")) {
@@ -77,5 +83,31 @@ export class Game {
   public setCurrentRoom(room: Room) {
     this.currentRoom.onEnd(this);
     this.currentRoom = room;
+  }
+
+  /**
+   * Sets up listeners (mouse, keyboard, etc) to the browser's window object.
+   */
+  private technicalSetup() {
+    window.addEventListener("click", this.handleMouseClick);
+    window.addEventListener("keydown", this.handleKeyboardEvent);
+    window.addEventListener("keyup", this.handleKeyboardEvent);
+  }
+
+  /**
+   * Cleans up listeners (mouse, keyboard) to the browser's window object.
+   */
+  private technicalCleanup() {
+    window.removeEventListener("click", this.handleMouseClick);
+    window.removeEventListener("keydown", this.handleKeyboardEvent);
+    window.removeEventListener("keyup", this.handleKeyboardEvent);
+  }
+
+  private handleMouseClick(event: PointerEvent) {
+    // TODO: update Input instance
+  }
+
+  private handleKeyboardEvent() {
+    // TODO: update Input instance
   }
 }
