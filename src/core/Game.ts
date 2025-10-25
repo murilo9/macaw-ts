@@ -2,6 +2,7 @@ import type { GameConfig } from "./GameConfig";
 import type { Room } from "./room/Room";
 
 export class Game {
+  private config: GameConfig;
   // Holds all entities that'll be processes by the logic loop
   private currentRoom: Room;
   // Keeps the logic and render loops running while = true
@@ -11,6 +12,7 @@ export class Game {
   private lastLogicExecution = 0;
 
   constructor(config: GameConfig) {
+    this.config = config;
     this.currentRoom = config.initialRoom;
   }
 
@@ -89,9 +91,22 @@ export class Game {
    * Sets up listeners (mouse, keyboard, etc) to the browser's window object.
    */
   private technicalSetup() {
+    // Setup event listeners
     window.addEventListener("click", this.handleMouseClick);
     window.addEventListener("keydown", this.handleKeyboardEvent);
     window.addEventListener("keyup", this.handleKeyboardEvent);
+
+    // Setup game canvas
+    const { background, height, width } = this.config.canvas;
+    const canvasEl = document.createElement("canvas");
+    canvasEl.width = width;
+    canvasEl.height = height;
+    canvasEl.style.background = background;
+    const reactRootEl = document.getElementById("root");
+    if (!reactRootEl) {
+      throw new Error("Could not get React root");
+    }
+    reactRootEl.appendChild(canvasEl);
   }
 
   /**
