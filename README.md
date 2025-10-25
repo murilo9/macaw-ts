@@ -8,12 +8,18 @@ A **render loop** renders all graphical entities's sprites on the screen (canvas
 ### Game lifecycle
 
 The React app creates an instance of the game with the game config and call its start method.
+
 The start method will let the render and logic loops running.
-Entities can interact with the game instance thorugh the onRun method `game` parameter. They can also get `dt` as a second parameter.
-Entities in the current room can add/remove entities by using game's appendEntity/removeEntity method.
+
+Entities can interact with the game instance through the onRun or onInit method `game` parameter. The onRun method also provides `dt` as a second parameter.
+
+Entities can access the current room through the game's getCurrentRoom method (as currentRoom is a private attribute of Game).
+
+Entities in the current room can add/remove entities by using the room's appendEntity/removeEntity method.
+
 Entities may call game's stop method to close the game.
 
-A more concrete example:
+[TODO: add a more concrete example]
 
 > "To interact" = send and receive data
 
@@ -24,6 +30,7 @@ _this is a tough one_
 ### How do entities read data from the Input layer
 
 _the game instance will likely have a Input instance, and will let a universal keypress (or similar) event listener update its attributes. Entities then can read data from it. The input instance will have a input map (received in the constructor?) that maps keyboard keys to the inputs (axis, etc). Each input will have a listener (array of callbacks) that entities can subscribe to in order to listen to it events._
+_For the mouse, the game will listen to all move and click events, and provide a listener (array of callbacks) that entities can subscribe to. The game will also provide a more specific click listener that graphic entities can listen to in order to know whether the mouse clicked on them._
 
 ### How do entities interact with the Sound layer
 

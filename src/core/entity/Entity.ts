@@ -13,6 +13,9 @@ export class Entity {
     this._id = uuidv4();
   }
 
+  // Executed once the entity is inserted in the room by Game's appendEntity method
+  onInit(game: Game) {}
+
   // Executed at every logic loop
   onRun(game: Game, dt: number) {}
 

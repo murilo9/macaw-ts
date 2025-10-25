@@ -64,24 +64,18 @@ export class Game {
     }
   }
 
-  public appendEntity() {}
-
-  public removeEntity() {}
-
   /**
    * Gets the current room.
-   * @returns Re
    */
   public getCurrentRoom(): Room {
     return this.currentRoom;
   }
 
   /**
-   * Gets an entity in the current room.
-   * @param id Entity _id to find.
-   * @returns
+   * Sets the current room
    */
-  public getEntity(id: string) {
-    return this.currentRoom.entities.find((entity) => entity._id === id);
+  public setCurrentRoom(room: Room) {
+    this.currentRoom.onEnd(this);
+    this.currentRoom = room;
   }
 }
