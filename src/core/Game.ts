@@ -1,8 +1,10 @@
 import type { GameConfig } from "./GameConfig";
+import { Input } from "./input/Input";
 import type { Room } from "./room/Room";
 
 export class Game {
   private config: GameConfig;
+  private input: Input;
   // Holds all entities that'll be processes by the logic loop
   private currentRoom: Room;
   // Keeps the logic and render loops running while = true
@@ -14,6 +16,7 @@ export class Game {
   constructor(config: GameConfig) {
     this.config = config;
     this.currentRoom = config.initialRoom;
+    this.input = new Input();
   }
 
   public start() {
@@ -29,7 +32,7 @@ export class Game {
 
   public stop() {
     this.isRunning = false;
-    this.technicalCleanup();
+    this.input._technicalCleanup();
   }
 
   /** Main render loop (drives both render + conditional logic updates) */
@@ -91,11 +94,6 @@ export class Game {
    * Sets up listeners (mouse, keyboard, etc) to the browser's window object.
    */
   private technicalSetup() {
-    // Setup event listeners
-    window.addEventListener("click", this.handleMouseClick);
-    window.addEventListener("keydown", this.handleKeyboardEvent);
-    window.addEventListener("keyup", this.handleKeyboardEvent);
-
     // Setup game canvas
     const { background, height, width } = this.config.canvas;
     const canvasEl = document.createElement("canvas");
@@ -107,22 +105,5 @@ export class Game {
       throw new Error("Could not get React root");
     }
     reactRootEl.appendChild(canvasEl);
-  }
-
-  /**
-   * Cleans up listeners (mouse, keyboard) to the browser's window object.
-   */
-  private technicalCleanup() {
-    window.removeEventListener("click", this.handleMouseClick);
-    window.removeEventListener("keydown", this.handleKeyboardEvent);
-    window.removeEventListener("keyup", this.handleKeyboardEvent);
-  }
-
-  private handleMouseClick(event: PointerEvent) {
-    // TODO: update Input instance
-  }
-
-  private handleKeyboardEvent() {
-    // TODO: update Input instance
   }
 }
