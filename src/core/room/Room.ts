@@ -1,21 +1,23 @@
 import type { Entity } from "../entity/Entity";
 import type { Game } from "../Game";
+import type { SpriteSet } from "../sprite/SpriteSet";
 
 export class Room {
   entities: Array<Entity>;
-  private game: Game | null;
+  spriteSets: Record<string, SpriteSet>;
 
-  constructor(initialEntities: Array<Entity> = []) {
+  constructor(
+    initialEntities: Array<Entity> = [],
+    initialSpriteSets: Record<string, SpriteSet>
+  ) {
     this.entities = initialEntities;
-    this.game = null;
+    this.spriteSets = initialSpriteSets;
   }
 
   /**
    * Executed when this room becomes the current room through Game's setCurrentRoom method.
    */
-  public onInit(game: Game) {
-    this.game = game;
-  }
+  public onInit(game: Game) {}
 
   /**
    * Executed when this room stops being the current room, when a new room is passed to Game's setCurrentRoom method.
@@ -23,22 +25,29 @@ export class Room {
    */
   public onEnd(game: Game) {}
 
+  /**
+   * Called by Game only. Retrieves an entity.
+   * @param _id
+   * @returns
+   */
   public getEntity(_id: string) {
     return this.entities.find((entity) => entity._id === _id);
   }
 
-  public appendEntity(entity: Entity) {
+  /**
+   * Called by Game only. Appends an entity.
+   * @param entity
+   * @param game
+   */
+  public appendEntity(entity: Entity, game: Game) {
     this.entities.push(entity);
-    if (this.game) {
-      entity.onInit(this.game);
-    } else {
-      console.warn(
-        "A room is appending an entity without having a game reference. Was this room started?",
-        this
-      );
-    }
+    entity.onInit(game);
   }
 
+  /**
+   * Called by Game only. Removes an entity.
+   * @param entityOrId
+   */
   public removeEntity(entityOrId: Entity | string) {
     if (typeof entityOrId === "string") {
       this.entities = this.entities.filter(

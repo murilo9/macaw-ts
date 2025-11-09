@@ -1,3 +1,4 @@
+import type { Entity } from "./entity/Entity";
 import type { GameConfig } from "./GameConfig";
 import { Input } from "./input/Input";
 import type { InputConfig } from "./input/InputConfig";
@@ -89,6 +90,23 @@ export class Game {
   public setCurrentRoom(room: Room) {
     this.currentRoom.onEnd(this);
     this.currentRoom = room;
+  }
+
+  /**
+   * Appends an entity in the current room
+   * @param entity
+   */
+  public appendEntity(entity: Entity) {
+    this.currentRoom.appendEntity(entity, this);
+  }
+
+  /**
+   * Retrieves an entity from the current room
+   * @param _id Entity's id
+   * @returns
+   */
+  public getEntity(_id: string) {
+    return this.currentRoom.getEntity(_id);
   }
 
   /**

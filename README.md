@@ -15,13 +15,15 @@ Entities can interact with the game instance through the onRun or onInit method 
 
 Entities can access the current room through the game's getCurrentRoom method (as currentRoom is a private attribute of Game).
 
-Entities in the current room can add/remove entities by using the room's appendEntity/removeEntity method.
+Entities in the current room can retrieve/add/remove entities by using the game's getEntity/appendEntity/removeEntity methods.
 
 Entities may call game's stop method to close the game.
 
 [TODO: add a more concrete example]
 
 > "To interact" = send and receive data
+
+### How are Graphic entities rendered
 
 ### How do entities interact with the UI layer
 
