@@ -3,9 +3,10 @@ import { Game } from "./core/Game";
 import { Room } from "./core/room/Room";
 import type { GameConfig } from "./core/GameConfig";
 import type { InputConfig } from "./core/input/InputConfig";
+import { LumberjackJackSpriteSet } from "./game/spritesets/lumberjack-jack";
 
 const gameConfig: GameConfig = {
-  initialRoom: new Room([]),
+  initialRoom: new Room([], { lumberjacjJack: LumberjackJackSpriteSet }),
   canvas: {
     background: "#aaaaaa",
     width: 640,

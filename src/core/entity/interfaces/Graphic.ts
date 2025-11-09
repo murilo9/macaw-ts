@@ -1,8 +1,9 @@
 import type { Spatial } from "./Spatial";
+import { type TileDef } from "../../sprite/SpriteSet";
 
 export interface Graphic extends Spatial {
   Graphic: {
-    spriteSetName: string;
-    currentFrame: number;
+    tile: TileDef;
+    shouldRender: boolean;
   };
 }

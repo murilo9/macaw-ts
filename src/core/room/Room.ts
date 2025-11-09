@@ -14,47 +14,75 @@ export class Room {
     this.spriteSets = initialSpriteSets;
   }
 
-  /**
-   * Executed when this room becomes the current room through Game's setCurrentRoom method.
-   */
-  public onInit(game: Game) {}
+  // ------------------------- NON-OVERRIDEABLE -------------------------
 
   /**
-   * Executed when this room stops being the current room, when a new room is passed to Game's setCurrentRoom method.
+   * Called by Game only. Initializes the Room.
    * @param game
+   * @param spritesetsEl
    */
-  public onEnd(game: Game) {}
+  public readonly beforeInit = (game: Game, spritesetsEl: HTMLDivElement) => {
+    // Appends this room's spritesets' img elements to the game's spritesetsEl DOM element.
+    Object.values(this.spriteSets).forEach((spriteSet) => {
+      spritesetsEl.append(spriteSet.img);
+    });
+    this.onInit();
+  };
 
   /**
    * Called by Game only. Retrieves an entity.
    * @param _id
    * @returns
    */
-  public getEntity(_id: string) {
+  public readonly getEntity = (_id: string) => {
     return this.entities.find((entity) => entity._id === _id);
-  }
+  };
 
   /**
    * Called by Game only. Appends an entity.
    * @param entity
    * @param game
    */
-  public appendEntity(entity: Entity, game: Game) {
+  public readonly appendEntity = (entity: Entity, game: Game) => {
     this.entities.push(entity);
     entity.onInit(game);
-  }
+  };
 
   /**
    * Called by Game only. Removes an entity.
    * @param entityOrId
    */
-  public removeEntity(entityOrId: Entity | string) {
-    if (typeof entityOrId === "string") {
-      this.entities = this.entities.filter(
-        (entity) => entity._id !== entityOrId
-      );
-    } else {
-      this.entities = this.entities.filter((entity) => entity !== entityOrId);
+  public readonly removeEntity = (_id: Entity | string) => {
+    const entityIndex = this.entities.findIndex((entity) => entity._id === _id);
+    if (entityIndex >= 0) {
+      this.entities.splice(entityIndex, 1);
     }
-  }
+  };
+
+  /**
+   * Called by Game only. Removes the room's loaded spriteSets from game's spritesetsEl.
+   * @param game
+   * @param spritesetsEl
+   */
+  public readonly beforeEnd = (game: Game, spritesetsEl: HTMLDivElement) => {
+    const loadedSpritesets = spritesetsEl.childNodes;
+    loadedSpritesets.forEach((loadedSpriteset) =>
+      spritesetsEl.removeChild(loadedSpriteset)
+    );
+    // Calls room's onEnd method
+    this.onEnd(game);
+  };
+
+  // ------------------------- OVERRIDEABLE -------------------------
+
+  /**
+   * Executed when this room becomes the current room, through Game's setCurrentRoom method.
+   */
+  public onInit() {}
+
+  /**
+   * Executed when this room stops being the current room, when a new room is passed to Game's setCurrentRoom method.
+   * @param game
+   */
+  public onEnd(game: Game) {}
 }

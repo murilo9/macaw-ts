@@ -1,13 +1,16 @@
-type TileDef = [xOrigin: number, yOrigin: number, xEnd: number, yEnd: number];
-
-type TileMap = Array<TileDef>;
+export type TileDef = [
+  xOrigin: number,
+  yOrigin: number,
+  xEnd: number,
+  yEnd: number
+];
 
 export class SpriteSet {
   img: HTMLImageElement;
-  tileMap: TileMap;
+  tiles: Record<string, TileDef>;
 
-  constructor(img: HTMLImageElement, tileMap: TileMap) {
+  constructor(img: HTMLImageElement, tiles: Record<string, TileDef>) {
     this.img = img;
-    this.tileMap = tileMap;
+    this.tiles = tiles;
   }
 }

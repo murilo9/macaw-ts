@@ -7,6 +7,9 @@ import type { Room } from "./room/Room";
 export class Game {
   private config: GameConfig;
   private input: Input;
+  private canvasEl: HTMLCanvasElement | undefined;
+  // Holds the img elements of the loaded spriteSets for the current room
+  private spritesetsEl: HTMLDivElement | undefined;
   // Holds all entities that'll be processes by the logic loop
   private currentRoom: Room;
   // Keeps the logic and render loops running while = true
@@ -22,9 +25,14 @@ export class Game {
   }
 
   public start() {
+    // Prevents re-execution is game is already running
     if (this.isRunning) return;
-    this.isRunning = true;
+    // Prevents trying to append spritesetsEl if not defined yet
+    if (!this.spritesetsEl) return;
+    // Initializes the initial (current) room
+    this.currentRoom.beforeInit(this, this.spritesetsEl);
 
+    this.isRunning = true;
     this.technicalSetup();
 
     this.lastLogicExecution = performance.now();
@@ -50,7 +58,7 @@ export class Game {
     }
 
     // Always render
-    this.renderFrame();
+    this.renderFrame(delta);
 
     requestAnimationFrame(this.renderLoop.bind(this));
   }
@@ -69,10 +77,12 @@ export class Game {
   /**
    * Draws graphic entities on the canvas
    */
-  private renderFrame() {
+  private renderFrame(delta: number) {
     for (let i = this.currentRoom.entities.length - 1; i >= 0; i--) {
       if (this.currentRoom.entities[i]._is("Graphic")) {
-        // draw entity sprite on canvas
+        // Calls entity's onRender method
+        this.currentRoom.entities[i].onRender(this, delta);
+        // TODO: draw entity sprite on canvas
       }
     }
   }
@@ -88,8 +98,17 @@ export class Game {
    * Sets the current room
    */
   public setCurrentRoom(room: Room) {
-    this.currentRoom.onEnd(this);
+    if (!this.spritesetsEl) {
+      throw new Error(
+        "Game's spritesetsEl could not be found on setCurrentRoom"
+      );
+    }
+    // Clears the current (soon-to-be-previous) room
+    this.currentRoom.beforeEnd(this, this.spritesetsEl);
+    // Sets the new room
     this.currentRoom = room;
+    // Initializes the initial (current) room
+    this.currentRoom.beforeInit(this, this.spritesetsEl);
   }
 
   /**
@@ -110,12 +129,21 @@ export class Game {
   }
 
   /**
+   * Removes an entity from the current room
+   * @param _id
+   */
+  public removeEntity(_id: string) {
+    this.currentRoom.removeEntity(_id);
+  }
+
+  /**
    * Sets up listeners (mouse, keyboard, etc) to the browser's window object.
    */
   private technicalSetup() {
     // Setup game canvas
     const { background, height, width } = this.config.canvas;
     const canvasEl = document.createElement("canvas");
+    canvasEl.id = "game-canvas";
     canvasEl.width = width;
     canvasEl.height = height;
     canvasEl.style.background = background;
@@ -124,5 +152,12 @@ export class Game {
       throw new Error("Could not get React root");
     }
     reactRootEl.appendChild(canvasEl);
+    this.canvasEl = canvasEl;
+    // Creates spritesets container
+    const spritesetsEl = document.createElement("div");
+    spritesetsEl.id = "game-spritesets";
+    spritesetsEl.style.display = "none !important";
+    document.body.appendChild(spritesetsEl);
+    this.spritesetsEl = spritesetsEl;
   }
 }

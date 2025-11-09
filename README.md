@@ -9,9 +9,9 @@ A **render loop** renders all graphical entities's sprites on the screen (canvas
 
 The React app creates an instance of the game with the game config and call its start method.
 
-The start method will let the render and logic loops running.
+The start method will initialize the starting room and let the render and logic loops running.
 
-Entities can interact with the game instance through the onRun or onInit method `game` parameter. Both onRun and method also provides `dt` as a second parameter.
+Entities can interact with the game instance through the onRun or onInit method `game` parameter. Both onRun and method also provides `delta` as a second parameter.
 
 Entities can access the current room through the game's getCurrentRoom method (as currentRoom is a private attribute of Game).
 
@@ -24,6 +24,34 @@ Entities may call game's stop method to close the game.
 > "To interact" = send and receive data
 
 ### How are Graphic entities rendered
+
+During the render loop, the game will iterate the graphic entities list (which is sorted by renderIndex) and render each entity.
+In order to render a graphic entity, the game access the entity's Graphic interface in order to get its spriteSet (so it ca get the img element and current title) and render the tile on the canvas.
+
+### How does animations work
+
+An entity may have an Animation instance, which provides a tile that can be used ro render the entity's sprite. In order for an animation to work, the entity's onRender method must call the animation's onUpdate method and assign the animation's currentTile (already returned by onUpdate) to the entity's tile (in Graphic.tile).
+
+Example:
+
+```javascript
+onRender(game: Game, delta: number){
+    this.Graphic.tile = this.animation.update(delta);
+}
+```
+
+An animation consists of a spriteSet, a list of tiles names that consists the animation's frames, and the amount of tiles per second.
+
+### How does rooms work
+
+Rooms are consisted of a list of entities and a list of loaded spriteSets. Once a room is initialized (through the onInit method), its initial spriteSets will have their img elements loaded into the game's spriteSetsEl element, so they can actually be rendered in the game's render loop.
+
+Lifecycle:
+
+1. On the game's setCurrentRoom method, the room has its beforeInit method called, which loads the room's spriteSets to the game's spritesetsEl DOM element.
+2. The room's beforeInit method then calls the room's onInit method, where the room instance can execute any other initialization logic, like settings its attributes.
+3. Entities can call the game's getEntity/appendEntity/removeEntity in order to get/appendremove entities in the room. The game will then call the room's getEntity/appendEntity/removeEntity methods.
+4. On the game's next setCurrentRoom method call, the current room has its beforeEnd method called, which clears the room's loaded spriteSets from the game's spritesetsEl DOM element, then finally calls the room's onEnd method, which can be used to execute any final logic.
 
 ### How do entities interact with the UI layer
 

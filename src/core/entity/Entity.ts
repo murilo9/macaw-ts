@@ -19,12 +19,15 @@ export class Entity {
   // Executed at every logic loop
   onRun(game: Game, dt: number) {}
 
+  // Executed at every render loop
+  onRender(game: Game, dt: number) {}
+
   /**
    * Type guard for interfaces that extend Entity
    * @param interfaceName
    * @returns
    */
   _is(interfaceName: EntityInterfaceName) {
-    return (this as any)[interfaceName] !== undefined;
+    return (this as never)[interfaceName] !== undefined;
   }
 }
