@@ -1,10 +1,12 @@
 import type { Entity } from "../entity/Entity";
+import type { Graphic } from "../entity/interfaces/Graphic";
 import type { Game } from "../Game";
 import type { SpriteSet } from "../sprite/SpriteSet";
 
 export class Room {
   entities: Array<Entity>;
   spriteSets: Record<string, SpriteSet>;
+  sortedGraphicEntities: Array<Graphic>;
 
   constructor(
     initialEntities: Array<Entity> = [],
@@ -12,6 +14,7 @@ export class Room {
   ) {
     this.entities = initialEntities;
     this.spriteSets = initialSpriteSets;
+    this.sortedGraphicEntities = [];
   }
 
   // ------------------------- NON-OVERRIDEABLE -------------------------
@@ -26,6 +29,15 @@ export class Room {
     Object.values(this.spriteSets).forEach((spriteSet) => {
       spritesetsEl.append(spriteSet.img);
     });
+    // Builds the sortedGraphicEntities array
+    this.sortedGraphicEntities = this.entities.filter((entity) =>
+      entity._is("Graphic")
+    ) as unknown as Array<Graphic>;
+    this.sortedGraphicEntities.sort(
+      (entityA, entityB) =>
+        entityA.Graphic.renderIndex - entityB.Graphic.renderIndex
+    );
+    // Calls room's onInit method
     this.onInit();
   };
 

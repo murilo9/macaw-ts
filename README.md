@@ -13,7 +13,7 @@ The start method will initialize the starting room and let the render and logic 
 
 Entities can interact with the game instance through the onRun or onInit method `game` parameter. Both onRun and method also provides `delta` as a second parameter.
 
-Entities can access the current room through the game's getCurrentRoom method (as currentRoom is a private attribute of Game).
+Entities **cannot** access the current room (as currentRoom is a private attribute of Game).
 
 Entities in the current room can retrieve/add/remove entities by using the game's getEntity/appendEntity/removeEntity methods.
 
@@ -23,10 +23,16 @@ Entities may call game's stop method to close the game.
 
 > "To interact" = send and receive data
 
+### How can entities communicate with each other
+
+Entities can get other entities through the game's getEntity method, passing the target entity's id as parameter.
+
 ### How are Graphic entities rendered
 
 During the render loop, the game will iterate the graphic entities list (which is sorted by renderIndex) and render each entity.
 In order to render a graphic entity, the game access the entity's Graphic interface in order to get its spriteSet (so it ca get the img element and current title) and render the tile on the canvas.
+
+An entity is rendered based on their renderIndex. Every time an entity's renderIndex changes, it should call the game's onRenderIndexUpdate method so the room's sortedGraphicEntities array can be re-sorted. Not doing this will cause the changed entity's renderIndex to have no effect on the rendering order.
 
 ### How does animations work
 

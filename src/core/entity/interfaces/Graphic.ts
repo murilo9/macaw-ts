@@ -5,5 +5,6 @@ export interface Graphic extends Spatial {
   Graphic: {
     tile: TileDef;
     shouldRender: boolean;
+    renderIndex: number;
   };
 }

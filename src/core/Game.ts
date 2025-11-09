@@ -1,4 +1,5 @@
 import type { Entity } from "./entity/Entity";
+import type { Graphic } from "./entity/interfaces/Graphic";
 import type { GameConfig } from "./GameConfig";
 import { Input } from "./input/Input";
 import type { InputConfig } from "./input/InputConfig";
@@ -14,9 +15,12 @@ export class Game {
   private currentRoom: Room;
   // Keeps the logic and render loops running while = true
   private isRunning = false;
-
+  // Used to limit the amount of logic loop executions per second
   private readonly logicIntervalMs = 1000 / 60; // max 60 logic updates per second
+  // Time (in millisecs) from last logic loop execution
   private lastLogicExecution = 0;
+  // Whether the current room's sortedGraphicEntities array should be re-sorted
+  private shouldResortGraphicEntities = false;
 
   constructor(gameConfig: GameConfig, inputConfig: InputConfig) {
     this.config = gameConfig;
@@ -24,6 +28,10 @@ export class Game {
     this.input = new Input(inputConfig);
   }
 
+  /**
+   * Starts the game. Called by the React app.
+   * @returns
+   */
   public start() {
     // Prevents re-execution is game is already running
     if (this.isRunning) return;
@@ -40,12 +48,15 @@ export class Game {
     requestAnimationFrame(this.renderLoop.bind(this));
   }
 
+  /**
+   * Stops the game. Called by anyone.
+   */
   public stop() {
     this.isRunning = false;
     this.input._technicalCleanup();
   }
 
-  /** Main render loop (drives both render + conditional logic updates) */
+  /** Main loop (drives both render + conditional logic updates) */
   private renderLoop(now: number) {
     if (!this.isRunning) return;
 
@@ -55,6 +66,15 @@ export class Game {
     if (delta >= this.logicIntervalMs) {
       this.processEntities(delta / 1000);
       this.lastLogicExecution = now;
+    }
+
+    // Re-sorts current room's sortedGraphicEntities array, if needed
+    if (this.shouldResortGraphicEntities) {
+      this.currentRoom.sortedGraphicEntities.sort(
+        (entityA, entityB) =>
+          entityA.Graphic.renderIndex - entityB.Graphic.renderIndex
+      );
+      this.shouldResortGraphicEntities = false;
     }
 
     // Always render
@@ -134,6 +154,13 @@ export class Game {
    */
   public removeEntity(_id: string) {
     this.currentRoom.removeEntity(_id);
+  }
+
+  /**
+   * Tells the game to re-sort current room's sortedGraphicEntities array on the next render loop execution
+   */
+  public onRenderIndexUpdated() {
+    this.shouldResortGraphicEntities = true;
   }
 
   /**
