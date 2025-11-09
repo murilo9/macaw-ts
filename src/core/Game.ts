@@ -1,5 +1,6 @@
 import type { GameConfig } from "./GameConfig";
 import { Input } from "./input/Input";
+import type { InputConfig } from "./input/InputConfig";
 import type { Room } from "./room/Room";
 
 export class Game {
@@ -13,10 +14,10 @@ export class Game {
   private readonly logicIntervalMs = 1000 / 60; // max 60 logic updates per second
   private lastLogicExecution = 0;
 
-  constructor(config: GameConfig) {
-    this.config = config;
-    this.currentRoom = config.initialRoom;
-    this.input = new Input();
+  constructor(gameConfig: GameConfig, inputConfig: InputConfig) {
+    this.config = gameConfig;
+    this.currentRoom = gameConfig.initialRoom;
+    this.input = new Input(inputConfig);
   }
 
   public start() {

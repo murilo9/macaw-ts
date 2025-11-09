@@ -11,7 +11,7 @@ The React app creates an instance of the game with the game config and call its 
 
 The start method will let the render and logic loops running.
 
-Entities can interact with the game instance through the onRun or onInit method `game` parameter. The onRun method also provides `dt` as a second parameter.
+Entities can interact with the game instance through the onRun or onInit method `game` parameter. Both onRun and method also provides `dt` as a second parameter.
 
 Entities can access the current room through the game's getCurrentRoom method (as currentRoom is a private attribute of Game).
 
