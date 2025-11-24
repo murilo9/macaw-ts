@@ -12,10 +12,14 @@ export const mountSpriteSetDef = (
   width: number,
   height: number,
   posX: number,
-  posY: number
-): TileDef => [
-  posX * width,
-  posY * height,
-  posX * width + width,
-  posY * height + height,
-];
+  posY: number,
+  innerGapX = 0,
+  innerGapY = 0,
+  outerGapX = 0,
+  outerGapY = 0
+): TileDef => ({
+  xOrigin: posX * width + innerGapX * posX + outerGapX,
+  yOrigin: posY * height + innerGapY * posY + outerGapY,
+  width,
+  height,
+});

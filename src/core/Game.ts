@@ -9,6 +9,10 @@ export class Game {
   private config: GameConfig;
   private input: Input;
   private canvasEl: HTMLCanvasElement | undefined;
+  // Canvas draw context
+  private ctx: CanvasRenderingContext2D | undefined;
+  // The graphic entity currently being drawn
+  private entityToDraw: (Entity & Graphic) | null = null;
   // Holds the img elements of the loaded spriteSets for the current room
   private spritesetsEl: HTMLDivElement | undefined;
   // Holds all entities that'll be processes by the logic loop
@@ -32,16 +36,23 @@ export class Game {
    * Starts the game. Called by the React app.
    * @returns
    */
-  public start() {
-    // Prevents re-execution is game is already running
+  public async start() {
+    // Prevents re-execution if game is already running
     if (this.isRunning) return;
-    // Prevents trying to append spritesetsEl if not defined yet
-    if (!this.spritesetsEl) return;
-    // Initializes the initial (current) room
-    this.currentRoom.beforeInit(this, this.spritesetsEl);
+
+    this.technicalSetup();
+
+    await Promise.all(
+      Array.from(document.images).map(
+        (image) =>
+          new Promise((resolve) => image.addEventListener("load", resolve))
+      )
+    );
 
     this.isRunning = true;
-    this.technicalSetup();
+
+    // Initializes the initial (current) room
+    this.currentRoom.beforeInit(this, this.spritesetsEl!);
 
     this.lastLogicExecution = performance.now();
     // Starts the render loop at browser screen refresh rate
@@ -71,8 +82,7 @@ export class Game {
     // Re-sorts current room's sortedGraphicEntities array, if needed
     if (this.shouldResortGraphicEntities) {
       this.currentRoom.sortedGraphicEntities.sort(
-        (entityA, entityB) =>
-          entityA.Graphic.renderIndex - entityB.Graphic.renderIndex
+        (entityA, entityB) => entityA.Graphic.depth - entityB.Graphic.depth
       );
       this.shouldResortGraphicEntities = false;
     }
@@ -98,11 +108,30 @@ export class Game {
    * Draws graphic entities on the canvas
    */
   private renderFrame(delta: number) {
+    this.ctx?.clearRect(
+      0,
+      0,
+      this.config.canvas.width,
+      this.config.canvas.height
+    ); // clear canvas
     for (let i = this.currentRoom.entities.length - 1; i >= 0; i--) {
       if (this.currentRoom.entities[i]._is("Graphic")) {
+        // Updates current entityToDraw
+        this.entityToDraw = this.currentRoom.entities[i] as Entity & Graphic;
         // Calls entity's onRender method
-        this.currentRoom.entities[i].onRender(this, delta);
-        // TODO: draw entity sprite on canvas
+        this.entityToDraw.onRender(this, delta);
+        // draw entity sprite on canvas
+        this.ctx?.drawImage(
+          this.entityToDraw.Graphic.spriteSet.img,
+          this.entityToDraw.Graphic.tile.xOrigin,
+          this.entityToDraw.Graphic.tile.yOrigin,
+          this.entityToDraw.Graphic.tile.width,
+          this.entityToDraw.Graphic.tile.height,
+          this.entityToDraw.Spatial.x,
+          this.entityToDraw.Spatial.y,
+          this.entityToDraw.Graphic.tile.width * 4,
+          this.entityToDraw.Graphic.tile.height * 4
+        );
       }
     }
   }
@@ -159,12 +188,12 @@ export class Game {
   /**
    * Tells the game to re-sort current room's sortedGraphicEntities array on the next render loop execution
    */
-  public onRenderIndexUpdated() {
+  public ondepthUpdated() {
     this.shouldResortGraphicEntities = true;
   }
 
   /**
-   * Sets up listeners (mouse, keyboard, etc) to the browser's window object.
+   * Sets up listeners (mouse, keyboard, etc) to the browser's window object and creates the spritesets element.
    */
   private technicalSetup() {
     // Setup game canvas
@@ -180,10 +209,12 @@ export class Game {
     }
     reactRootEl.appendChild(canvasEl);
     this.canvasEl = canvasEl;
+    this.ctx = canvasEl.getContext("2d")!;
+    this.ctx.imageSmoothingEnabled = false;
     // Creates spritesets container
     const spritesetsEl = document.createElement("div");
     spritesetsEl.id = "game-spritesets";
-    spritesetsEl.style.display = "none !important";
+    spritesetsEl.style.display = "none";
     document.body.appendChild(spritesetsEl);
     this.spritesetsEl = spritesetsEl;
   }

@@ -29,10 +29,10 @@ Entities can get other entities through the game's getEntity method, passing the
 
 ### How are Graphic entities rendered
 
-During the render loop, the game will iterate the graphic entities list (which is sorted by renderIndex) and render each entity.
+During the render loop, the game will iterate the graphic entities list (which is sorted by depth) and render each entity.
 In order to render a graphic entity, the game access the entity's Graphic interface in order to get its spriteSet (so it ca get the img element and current title) and render the tile on the canvas.
 
-An entity is rendered based on their renderIndex. Every time an entity's renderIndex changes, it should call the game's onRenderIndexUpdate method so the room's sortedGraphicEntities array can be re-sorted. Not doing this will cause the changed entity's renderIndex to have no effect on the rendering order.
+An entity is rendered based on their depth. Every time an entity's depth changes, it should call the game's ondepthUpdate method so the room's sortedGraphicEntities array can be re-sorted. Not doing this will cause the changed entity's depth to have no effect on the rendering order.
 
 ### How does animations work
 

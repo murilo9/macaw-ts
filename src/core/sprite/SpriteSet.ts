@@ -1,9 +1,9 @@
-export type TileDef = [
-  xOrigin: number,
-  yOrigin: number,
-  xEnd: number,
-  yEnd: number
-];
+export type TileDef = {
+  xOrigin: number;
+  yOrigin: number;
+  width: number;
+  height: number;
+};
 
 export class SpriteSet {
   img: HTMLImageElement;

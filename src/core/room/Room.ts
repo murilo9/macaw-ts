@@ -34,8 +34,7 @@ export class Room {
       entity._is("Graphic")
     ) as unknown as Array<Graphic>;
     this.sortedGraphicEntities.sort(
-      (entityA, entityB) =>
-        entityA.Graphic.renderIndex - entityB.Graphic.renderIndex
+      (entityA, entityB) => entityA.Graphic.depth - entityB.Graphic.depth
     );
     // Calls room's onInit method
     this.onInit();

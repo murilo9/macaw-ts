@@ -10,6 +10,8 @@ export class Animation {
   updateThreshold: number;
   // The tile that will be used to render the entity
   currentTile: TileDef;
+  // Stores the amount of time past between render loops. Used to update currentTile
+  acumulatedDelta: number = 0;
   // The list of tiles names that compose the animation
   private tilesList: Array<string>;
   // Current tile index
@@ -30,8 +32,11 @@ export class Animation {
    * Updates the current tile. Must be called by entity's onRun method.
    * @param delta Time (in millisecs) past from last render loop.
    */
-  onUpdate(delta: number) {
-    if (delta >= this.updateThreshold) {
+  onUpdate(delta: number): TileDef {
+    this.acumulatedDelta += delta;
+    //console.log(delta, this.updateThreshold);
+    if (this.acumulatedDelta >= this.updateThreshold) {
+      this.acumulatedDelta = 0;
       const nextTileIndex = this.currentTileIndex + 1;
       // Increments (os resets) currentTileIndex
       this.currentTileIndex =
@@ -39,8 +44,12 @@ export class Animation {
       // Updates currentTile (gets tile name from tilesList, according to currentTileIndex)
       this.currentTile =
         this.spriteSet.tiles[this.tilesList[this.currentTileIndex]];
-      // Returns the updated curent tile
-      return this.currentTile;
     }
+    // Returns the updated curent tile
+    return this.currentTile;
+  }
+
+  setTilesPerSec(tilesPerSec: number) {
+    this.updateThreshold = 1000 / tilesPerSec;
   }
 }
