@@ -10,13 +10,9 @@ export default function SpriteSetTileRenderer({
   const container = useRef<HTMLDivElement | null>(null);
   const showTilesNames = true;
 
-  useEffect(() => {
-    container.current!.appendChild(spriteSet.img);
-    console.log("spriteSet", spriteSet);
-  }, []);
-
   return (
     <div style={{ position: "relative" }} ref={container}>
+      <img src={spriteSet.img.src} alt="Image" />
       {Object.entries(spriteSet.tiles).map(([tileName, tile], index) => (
         <div
           className="absolute"

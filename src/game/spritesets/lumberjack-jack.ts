@@ -7,8 +7,6 @@ const GRID_BASE_Y = 64;
 const INNER_GAP = 36;
 const OUTER_GAP = 18;
 
-export type LumberjackJackTileName = "left" | "right" | "up" | "down";
-
 const img = new Image();
 img.src = lumberjackJackImageUrl;
 

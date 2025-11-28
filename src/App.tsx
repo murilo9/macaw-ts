@@ -1,11 +1,9 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Game } from "./core/Game";
-import { Room } from "./core/room/Room";
 import type { GameConfig } from "./core/GameConfig";
 import type { InputConfig } from "./core/input/InputConfig";
-import { LumberjackJackSpriteSet } from "./game/spritesets/lumberjack-jack";
 import SpriteSetViewer from "./core/spriteset-viewer/SpriteSetViewer";
-import { WorldRoom } from "./game/rooms/world";
+import { WorldRoom } from "./game/rooms/World";
 
 // Defines whether it'll be displaed the game or a developer tool
 const MODE: "game" | "spriteset_viewer" = "game";
