@@ -5,7 +5,7 @@ import { Vector2D } from "../../../core/utils/Vector2D";
 import { spriteSets } from "../../spritesets";
 import { rat0Animations } from "./animations";
 
-export class Mouse extends Entity implements Graphic {
+export class Rat extends Entity implements Graphic {
   Graphic = {
     spriteSet: spriteSets.Rat0SpriteSet,
     tile: rat0Animations.walking.currentTile,
@@ -20,10 +20,31 @@ export class Mouse extends Entity implements Graphic {
     rotation: 0,
   };
 
-  private animation = rat0Animations.eating;
+  private isEating = false;
+
+  private animation = rat0Animations.idle;
 
   constructor() {
     super();
+  }
+
+  eatCheese() {
+    if (this.isEating) {
+      return;
+    }
+
+    this.isEating = true;
+    this.animation = rat0Animations.eating;
+    this.animation.reset();
+  }
+
+  onInit(game: Game) {
+    // Listens to the Input keyUp event
+    game.onKeyUp((key) => {
+      if (key === "Space") {
+        this.eatCheese();
+      }
+    });
   }
 
   onRender(game: Game, dt: number): void {
@@ -38,6 +59,7 @@ export class Mouse extends Entity implements Graphic {
     // Changes animation to idle if finished eating cheese
     if (this.animation.isFinished) {
       this.animation = rat0Animations.idle;
+      this.isEating = false;
     }
   }
 }

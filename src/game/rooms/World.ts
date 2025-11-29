@@ -1,10 +1,10 @@
 import { Room } from "../../core/room/Room";
-import { Mouse } from "../entities/Mouse/Mouse";
+import { Rat } from "../entities/Rat/Mouse";
 import { Player } from "../entities/Player/Player";
 import { spriteSets } from "../spritesets";
 
 export class WorldRoom extends Room {
   constructor() {
-    super([new Player(), new Mouse()], spriteSets);
+    super([new Player(), new Rat()], spriteSets);
   }
 }

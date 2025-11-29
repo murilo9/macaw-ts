@@ -29,6 +29,10 @@ export class Room {
     Object.values(this.spriteSets).forEach((spriteSet) => {
       spritesetsEl.append(spriteSet.img);
     });
+    // Initializes all initial entities
+    this.entities.forEach((entity) => {
+      entity.onInit(game);
+    });
     // Builds the sortedGraphicEntities array
     this.sortedGraphicEntities = this.entities.filter((entity) =>
       entity._is("Graphic")

@@ -270,6 +270,22 @@ export class Game {
     this.shouldResortGraphicEntities = true;
   }
 
+  public isKeyPressed(key: string) {
+    return this.input.keyPressed[key];
+  }
+
+  public onKey(callback: (key: string) => void) {
+    this.input.onKey(callback);
+  }
+
+  public onKeyUp(callback: (key: string) => void) {
+    this.input.onKeyUp(callback);
+  }
+
+  public onKeyDown(callback: (key: string) => void) {
+    this.input.onKeyDown(callback);
+  }
+
   /**
    * Sets up listeners (mouse, keyboard, etc) to the browser's window object and creates the spritesets element.
    */

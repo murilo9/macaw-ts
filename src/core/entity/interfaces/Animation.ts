@@ -109,7 +109,7 @@ export class Animation {
   }
 
   // Restarts the animation
-  restart() {
+  reset() {
     this.isFinished = false;
     this.currentTileIndex = 0;
     this.currentTile =

@@ -10,6 +10,9 @@ export class Input {
   private keyListeners: Array<(key: string, type: "up" | "down") => void>;
   private axis1Listeners: Array<(axis: InputAxis) => void>;
   private axis2Listeners: Array<(axis: InputAxis) => void>;
+  private boundHandleMouseClick!: (event: PointerEvent) => void;
+  private boundHandleKeyDownEvent!: (event: KeyboardEvent) => void;
+  private boundHandleKeyUpEvent!: (event: KeyboardEvent) => void;
 
   private AXIS_DIRECTIONS: Array<"left" | "right" | "up" | "down"> = [
     "left",
@@ -44,19 +47,24 @@ export class Input {
   }
 
   private technicalSetup() {
+    // Bind event handlers to preserve 'this' context
+    this.boundHandleMouseClick = this.handleMouseClick.bind(this);
+    this.boundHandleKeyDownEvent = this.handleKeyDownEvent.bind(this);
+    this.boundHandleKeyUpEvent = this.handleKeyUpEvent.bind(this);
+
     // Setup event listeners
-    window.addEventListener("click", this.handleMouseClick);
-    window.addEventListener("keydown", this.handleKeyDownEvent);
-    window.addEventListener("keyup", this.handleKeyUpEvent);
+    window.addEventListener("click", this.boundHandleMouseClick);
+    window.addEventListener("keydown", this.boundHandleKeyDownEvent);
+    window.addEventListener("keyup", this.boundHandleKeyUpEvent);
   }
 
   /**
    * Cleans up listeners (mouse, keyboard) to the browser's window object.
    */
   technicalCleanup() {
-    window.removeEventListener("click", this.handleMouseClick);
-    window.removeEventListener("keydown", this.handleKeyDownEvent);
-    window.removeEventListener("keyup", this.handleKeyUpEvent);
+    window.removeEventListener("click", this.boundHandleMouseClick);
+    window.removeEventListener("keydown", this.boundHandleKeyDownEvent);
+    window.removeEventListener("keyup", this.boundHandleKeyUpEvent);
   }
 
   private handleMouseClick(event: PointerEvent) {
@@ -69,16 +77,16 @@ export class Input {
    */
   private handleKeyDownEvent(event: KeyboardEvent) {
     // Updates keyPressed map
-    this.keyPressed[event.key] = true;
+    this.keyPressed[event.code] = true;
     // Updates the axes
-    this.updateAxes(event.key, "press");
+    this.updateAxes(event.code, "press");
     // Calls all key listeners
     for (const callback of this.keyListeners) {
-      callback(event.key, "down");
+      callback(event.code, "down");
     }
     // Calls all key down listeners
     for (const callback of this.keyDownListeners) {
-      callback(event.key);
+      callback(event.code);
     }
   }
 
@@ -88,16 +96,16 @@ export class Input {
    */
   private handleKeyUpEvent(event: KeyboardEvent) {
     // Updates keyPressed map
-    this.keyPressed[event.key] = false;
+    this.keyPressed[event.code] = false;
     // Updates the axes
-    this.updateAxes(event.key, "release");
+    this.updateAxes(event.code, "release");
     // Calls all key listeners
     for (const callback of this.keyListeners) {
-      callback(event.key, "up");
+      callback(event.code, "up");
     }
     // Calls all key up listeners
     for (const callback of this.keyUpListeners) {
-      callback(event.key);
+      callback(event.code);
     }
   }
 
