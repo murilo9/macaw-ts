@@ -1,10 +1,10 @@
 import { Animation } from "../../../core/entity/interfaces/Animation";
 import { spriteSets } from "../../spritesets";
 
-const SPEED = 6;
+const SPEED = 8;
 
-export const mouseAnimations = {
-  idle: new Animation(spriteSets.Mouse0SpriteSet, SPEED, [
+export const rat0Animations = {
+  idle: new Animation(spriteSets.Rat0SpriteSet, SPEED, [
     "idle_0",
     "idle_1",
     "idle_2",
@@ -12,7 +12,7 @@ export const mouseAnimations = {
     "idle_4",
     "idle_5",
   ]),
-  walking: new Animation(spriteSets.Mouse0SpriteSet, SPEED, [
+  walking: new Animation(spriteSets.Rat0SpriteSet, SPEED, [
     "walk_0",
     "walk_1",
     "walk_2",
@@ -20,7 +20,7 @@ export const mouseAnimations = {
     "walk_4",
     "walk_5",
   ]),
-  eating: new Animation(spriteSets.Mouse0SpriteSet, SPEED, [
+  eating: new Animation(spriteSets.Rat0SpriteSet, SPEED, [
     "eat_0",
     "eat_1",
     "eat_2",

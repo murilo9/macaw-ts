@@ -1,6 +1,6 @@
 import type { SpriteSet } from "../../core/sprite/SpriteSet";
 import { mountSpriteSetGrid } from "../../core/utils/mountSpriteSetGrid";
-import mouse0ImageUrl from "../assets/Mouse_01.png";
+import rat0ImageUrl from "../assets/Rat_01.png";
 
 const GRID_BASE_X = 32;
 const GRID_BASE_Y = 32;
@@ -8,7 +8,7 @@ const INNER_GAP = 8;
 const OUTER_GAP = 4;
 
 const img = new Image();
-img.src = mouse0ImageUrl;
+img.src = rat0ImageUrl;
 
 const getTileFromGrid = mountSpriteSetGrid(
   GRID_BASE_X,
@@ -42,7 +42,7 @@ const tiles = {
   eat_9: getTileFromGrid(9, 2),
 };
 
-export const Mouse0SpriteSet: SpriteSet = {
+export const Rat0SpriteSet: SpriteSet = {
   img,
   tiles,
 };

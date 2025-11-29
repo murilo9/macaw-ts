@@ -11,5 +11,9 @@ export interface Graphic extends Spatial {
     shouldRender: boolean;
     // Used to define the sprite's rendering z-index
     depth: number;
+    // Used to scale sprite drawing
+    xScale: number;
+    // Used to scale sprite drawing
+    yScale: number;
   };
 }

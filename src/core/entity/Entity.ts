@@ -16,7 +16,11 @@ export class Entity {
   // Executed once the entity is inserted in the room by Game's appendEntity method
   onInit(game: Game) {}
 
-  // Executed at every logic loop
+  /**
+   * Executed at every logic loop.
+   * @param game Current Game instance.
+   * @param dt Amount (in milisseconds) since the end of the last logic loop.
+   */
   onRun(game: Game, dt: number) {}
 
   // Executed at every render loop
