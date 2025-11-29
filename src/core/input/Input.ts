@@ -53,7 +53,7 @@ export class Input {
   /**
    * Cleans up listeners (mouse, keyboard) to the browser's window object.
    */
-  _technicalCleanup() {
+  technicalCleanup() {
     window.removeEventListener("click", this.handleMouseClick);
     window.removeEventListener("keydown", this.handleKeyDownEvent);
     window.removeEventListener("keyup", this.handleKeyUpEvent);

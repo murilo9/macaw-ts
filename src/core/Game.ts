@@ -67,7 +67,7 @@ export class Game {
    */
   public stop() {
     this.isRunning = false;
-    this.input._technicalCleanup();
+    this.input.technicalCleanup();
   }
 
   /** Main loop (drives both render + conditional logic updates) */
@@ -266,7 +266,7 @@ export class Game {
   /**
    * Tells the game to re-sort current room's sortedGraphicEntities array on the next render loop execution
    */
-  public ondepthUpdated() {
+  public onDepthUpdated() {
     this.shouldResortGraphicEntities = true;
   }
 

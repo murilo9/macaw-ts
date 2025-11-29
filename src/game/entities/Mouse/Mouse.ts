@@ -16,11 +16,11 @@ export class Mouse extends Entity implements Graphic {
   };
   Spatial = {
     position: new Vector2D({ x: 300, y: 200 }),
-    velocity: new Vector2D({ angle: -45, module: 120 }),
-    rotation: 80,
+    velocity: new Vector2D({ angle: 0, module: 0 }),
+    rotation: 0,
   };
 
-  private animation = rat0Animations.walking;
+  private animation = rat0Animations.eating;
 
   constructor() {
     super();
@@ -31,8 +31,13 @@ export class Mouse extends Entity implements Graphic {
   }
 
   onRun() {
+    // Mirrors sprite on xSpeed flip
     if (this.Spatial.velocity.x !== 0) {
       this.Graphic.xScale = this.Spatial.velocity.x > 0 ? 2 : -2;
+    }
+    // Changes animation to idle if finished eating cheese
+    if (this.animation.isFinished) {
+      this.animation = rat0Animations.idle;
     }
   }
 }

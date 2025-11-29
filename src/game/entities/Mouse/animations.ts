@@ -20,16 +20,21 @@ export const rat0Animations = {
     "walk_4",
     "walk_5",
   ]),
-  eating: new Animation(spriteSets.Rat0SpriteSet, SPEED, [
-    "eat_0",
-    "eat_1",
-    "eat_2",
-    "eat_3",
-    "eat_4",
-    "eat_5",
-    "eat_6",
-    "eat_7",
-    "eat_8",
-    "eat_9",
-  ]),
+  eating: new Animation(
+    spriteSets.Rat0SpriteSet,
+    SPEED,
+    [
+      "eat_0",
+      "eat_1",
+      "eat_2",
+      "eat_3",
+      "eat_4",
+      "eat_5",
+      "eat_6",
+      "eat_7",
+      "eat_8",
+      "eat_9",
+    ],
+    "stop"
+  ),
 };
