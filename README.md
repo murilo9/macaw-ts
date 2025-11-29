@@ -47,6 +47,7 @@ onRender(game: Game, delta: number){
 ```
 
 An animation consists of a spriteSet, a list of tiles names that consists the animation's frames, and the amount of tiles per second.
+An animation can have a behavior, which tells what happens once it finishes (repeat, stop, reverse and stop, reverse repeat). In order to tell whether an animation has finished, an entit can check its `isFinished` value in the onRun method.
 
 ### How does rooms work
 
