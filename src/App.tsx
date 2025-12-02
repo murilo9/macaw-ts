@@ -19,10 +19,10 @@ const gameConfig: GameConfig = {
 
 const inputConfig: InputConfig = {
   axis1: {
-    down: "s",
-    left: "a",
-    right: "d",
-    up: "w",
+    down: "KeyS",
+    left: "KeyA",
+    right: "KeyD",
+    up: "KeyW",
   },
   axis2: {
     down: "Down",

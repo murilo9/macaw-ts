@@ -66,7 +66,7 @@ _this is a tough one_
 
 ### How do entities read data from the Input layer
 
-The game instance will likely have a Input instance, and will let a universal keypress (or similar) event listener update its attributes. Entities then can read data from it. The input instance will has a input config (a key map, defined in the constructor) that maps keyboard keys to the inputs (axis, etc). The input has a listener (array of callbacks) that entities can subscribe to in order to listen to its events.
+The game instance has an Input instance, and will let a universal keypress event listener update its attributes. Entities then can read data from it. The input instance has an input config (a key map, defined in the constructor) that maps keyboard keys to the inputs (axis, etc). The input has a listener (array of callbacks) that entities can subscribe to (through Game's onKe/onKeuUp/onKeyDown methods) in order to listen to its events.
 _For the mouse, the game will listen to all move and click events, and provide a listener (array of callbacks) that entities can subscribe to. The game will also provide a more specific click listener that graphic entities can listen to in order to know whether the mouse clicked on them._
 
 ### How do entities interact with the Sound layer

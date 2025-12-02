@@ -1,5 +1,5 @@
 import { Room } from "../../core/room/Room";
-import { Rat } from "../entities/Rat/Mouse";
+import { Rat } from "../entities/Rat/Rat";
 import { Player } from "../entities/Player/Player";
 import { spriteSets } from "../spritesets";
 

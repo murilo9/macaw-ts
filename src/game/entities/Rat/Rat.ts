@@ -5,6 +5,7 @@ import { Vector2D } from "../../../core/utils/Vector2D";
 import { spriteSets } from "../../spritesets";
 import { rat0Animations } from "./animations";
 
+const SPEED = 80;
 export class Rat extends Entity implements Graphic {
   Graphic = {
     spriteSet: spriteSets.Rat0SpriteSet,
@@ -39,11 +40,22 @@ export class Rat extends Entity implements Graphic {
   }
 
   onInit(game: Game) {
-    // Listens to the Input keyUp event
+    // Listens to the Input keyUp event in order to eat cheese
     game.onKeyUp((key) => {
       if (key === "Space") {
         this.eatCheese();
       }
+    });
+    // Listens to the game axis1 in order to move
+    game.onAxisChange("axis1", (axis) => {
+      this.Spatial.velocity.setXY(
+        (-axis.left + axis.right) * SPEED,
+        (-axis.up + axis.down) * SPEED
+      );
+      this.animation =
+        Boolean(-axis.left + axis.right) || Boolean(-axis.up + axis.down)
+          ? rat0Animations.walking
+          : rat0Animations.idle;
     });
   }
 

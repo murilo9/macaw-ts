@@ -3,6 +3,7 @@ import type { Graphic } from "./entity/interfaces/Graphic";
 import type { Spatial } from "./entity/interfaces/Spatial";
 import type { GameConfig } from "./GameConfig";
 import { Input } from "./input/Input";
+import type { InputAxis } from "./input/InputAxis";
 import type { InputConfig } from "./input/InputConfig";
 import type { Room } from "./room/Room";
 
@@ -284,6 +285,20 @@ export class Game {
 
   public onKeyDown(callback: (key: string) => void) {
     this.input.onKeyDown(callback);
+  }
+
+  public onAxisChange(
+    axis: "axis1" | "axis2",
+    callback: (axis: InputAxis) => void
+  ) {
+    switch (axis) {
+      case "axis1":
+        this.input.onAxis1Change(callback);
+        break;
+      case "axis2":
+        this.input.onAxis2Change(callback);
+        break;
+    }
   }
 
   /**
