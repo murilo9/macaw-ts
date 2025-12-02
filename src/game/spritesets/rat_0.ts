@@ -1,6 +1,6 @@
 import type { SpriteSet } from "../../core/sprite/SpriteSet";
 import { mountSpriteSetGrid } from "../../core/utils/mountSpriteSetGrid";
-import rat0ImageUrl from "../assets/Rat_01.png";
+import rat0ImageUrl from "../assets/Cute_Fantasy/Animals/Mouse/Mouse_01.png";
 
 const GRID_BASE_X = 32;
 const GRID_BASE_Y = 32;

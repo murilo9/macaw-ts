@@ -1,6 +1,6 @@
 import { SpriteSet } from "../../core/sprite/SpriteSet";
 import { mountSpriteSetGrid } from "../../core/utils/mountSpriteSetGrid";
-import lumberjackJackImageUrl from "../assets/Lumberjack_Jack.png";
+import lumberjackJackImageUrl from "../assets/Cute_Fantasy/NPCs (Premade)/Lumberjack_Jack.png";
 
 const GRID_BASE_X = 64;
 const GRID_BASE_Y = 64;
