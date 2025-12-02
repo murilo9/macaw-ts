@@ -2,6 +2,7 @@ import { Entity } from "../../../core/entity/Entity";
 import type { Graphic } from "../../../core/entity/interfaces/Graphic";
 import type { Game } from "../../../core/Game";
 import { Vector2D } from "../../../core/utils/Vector2D";
+import { GLOBAL_SCALE } from "../../constants";
 import { spriteSets } from "../../spritesets";
 import { playerAnimations } from "./animations";
 
@@ -9,14 +10,14 @@ export class Player extends Entity implements Graphic {
   Graphic = {
     spriteSet: spriteSets.LumberjackJackSpriteSet,
     tile: playerAnimations.walk_side.currentTile,
-    shouldRender: false,
+    shouldRender: true,
     depth: 0,
-    xScale: 4,
-    yScale: 4,
+    xScale: GLOBAL_SCALE,
+    yScale: GLOBAL_SCALE,
   };
   Spatial = {
     position: new Vector2D({ x: 200, y: 200 }),
-    velocity: new Vector2D({ angle: 0, module: 0 }),
+    velocity: new Vector2D(),
     rotation: 0,
   };
 

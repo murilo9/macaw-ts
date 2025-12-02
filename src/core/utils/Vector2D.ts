@@ -3,14 +3,21 @@ export class Vector2D {
   y: number;
 
   // Overload signatures
+  constructor(args?: never);
   constructor(args: { x: number; y: number });
   constructor(args: { angle: number; module: number });
 
   // Implementation
   constructor(
-    args: { x: number; y: number } | { angle: number; module: number }
+    args:
+      | { x: number; y: number }
+      | { angle: number; module: number }
+      | undefined
   ) {
-    if ("x" in args && "y" in args) {
+    if (!args) {
+      this.x = 0;
+      this.y = 0;
+    } else if ("x" in args && "y" in args) {
       this.x = args.x;
       this.y = args.y;
     } else if ("angle" in args && "module" in args) {
