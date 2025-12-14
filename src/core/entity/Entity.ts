@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import type { Game } from "../Game";
 
-type EntityInterfaceName = "Graphic" | "Spatial";
+type EntityInterfaceName = "Graphic" | "Spatial" | "Collider";
 
 /**
  * An object that gets processed by Game's processateEntities method.

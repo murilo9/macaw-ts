@@ -69,6 +69,10 @@ _this is a tough one_
 The game instance has an Input instance, and will let a universal keypress event listener update its attributes. Entities then can read data from it. The input instance has an input config (a key map, defined in the constructor) that maps keyboard keys to the inputs (axis, etc). The input has a listener (array of callbacks) that entities can subscribe to (through Game's onKe/onKeuUp/onKeyDown methods) in order to listen to its events.
 _For the mouse, the game will listen to all move and click events, and provide a listener (array of callbacks) that entities can subscribe to. The game will also provide a more specific click listener that graphic entities can listen to in order to know whether the mouse clicked on them._
 
+### How does collisions work
+
+An entity that has collision must implement the Collider interface, which includes the entity's collision body. Every time a room is initialized or an entity is inserted into a room, the room adds the entitiy(es)' collision body(ies) to its collision system.
+
 ### How do entities interact with the Sound layer
 
 _the game instance should have a list of audios (from JS Audio API) and provide method for the entities to interact with it?_

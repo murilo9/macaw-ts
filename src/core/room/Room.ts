@@ -1,12 +1,17 @@
+import { System } from "check2d";
 import type { Entity } from "../entity/Entity";
 import type { Graphic } from "../entity/interfaces/Graphic";
 import type { Game } from "../Game";
 import type { SpriteSet } from "../sprite/SpriteSet";
+import type { Collider } from "../entity/interfaces/Collider";
 
 export class Room {
   entities: Array<Entity>;
   spriteSets: Record<string, SpriteSet>;
+  // Entities sorted by Graphic depth
   sortedGraphicEntities: Array<Graphic>;
+  colliderEntities: Array<Entity & Collider>;
+  private collisionSystem: System;
 
   constructor(
     initialEntities: Array<Entity> = [],
@@ -15,6 +20,8 @@ export class Room {
     this.entities = initialEntities;
     this.spriteSets = initialSpriteSets;
     this.sortedGraphicEntities = [];
+    this.colliderEntities = [];
+    this.collisionSystem = new System();
   }
 
   // ------------------------- NON-OVERRIDEABLE -------------------------
@@ -29,9 +36,9 @@ export class Room {
     Object.values(this.spriteSets).forEach((spriteSet) => {
       spritesetsEl.append(spriteSet.img);
     });
-    // Initializes all initial entities
+    // Appends all initial entities
     this.entities.forEach((entity) => {
-      entity.onInit(game);
+      this.appendEntity(entity, game);
     });
     // Builds the sortedGraphicEntities array
     this.sortedGraphicEntities = this.entities.filter((entity) =>
@@ -61,6 +68,19 @@ export class Room {
   public readonly appendEntity = (entity: Entity, game: Game) => {
     this.entities.push(entity);
     entity.onInit(game);
+    // If entity is Collider
+    if (entity._is("Collider")) {
+      // Sets isStatic attribue
+      (entity as unknown as Entity & Collider).Collider.body.isStatic = (
+        entity as unknown as Entity & Collider
+      ).Collider.static;
+      // Inserts it in collierEntities array
+      this.colliderEntities.push(entity as unknown as Entity & Collider);
+      // Inserts its body in the room's collision system
+      this.collisionSystem.insert(
+        (entity as unknown as Collider).Collider.body
+      );
+    }
   };
 
   /**
@@ -71,6 +91,21 @@ export class Room {
     const entityIndex = this.entities.findIndex((entity) => entity._id === _id);
     if (entityIndex >= 0) {
       this.entities.splice(entityIndex, 1);
+
+      // If entity is Collider
+      if (this.entities[entityIndex]._is("Collider")) {
+        // Removes it from the collierEntities array
+        const colliderEntitiesIndex = this.colliderEntities.findIndex(
+          (entity) => entity._id === _id
+        );
+        if (colliderEntitiesIndex >= 0) {
+          this.colliderEntities.splice(colliderEntitiesIndex, 1);
+        }
+        // Removes its body from the room's collision system
+        this.collisionSystem.remove(
+          (this.entities[entityIndex] as unknown as Collider).Collider.body
+        );
+      }
     }
   };
 
@@ -87,6 +122,27 @@ export class Room {
     // Calls room's onEnd method
     this.onEnd(game);
   };
+
+  public _resolveCollision(entity: Entity & Collider) {
+    this.collisionSystem.checkOne(entity.Collider.body, (response) => {
+      const { a, b, overlapV } = response;
+      a.setPosition(a.pos.x - overlapV.x, a.pos.y - overlapV.y);
+      entity.Spatial.position.x -= overlapV.x;
+      entity.Spatial.position.y -= overlapV.y;
+    });
+  }
+
+  /**
+   * Draws collision system's entities' collision boxes
+   * @param ctx
+   */
+  public _drawCollisionBoxes(ctx: CanvasRenderingContext2D) {
+    ctx.strokeStyle = "#FF00CC";
+    ctx.beginPath();
+    // draw whole system
+    this.collisionSystem.draw(ctx);
+    ctx.stroke();
+  }
 
   // ------------------------- OVERRIDEABLE -------------------------
 

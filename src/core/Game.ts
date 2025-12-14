@@ -1,4 +1,5 @@
 import type { Entity } from "./entity/Entity";
+import type { Collider } from "./entity/interfaces/Collider";
 import type { Graphic } from "./entity/interfaces/Graphic";
 import type { Spatial } from "./entity/interfaces/Spatial";
 import type { GameConfig } from "./GameConfig";
@@ -6,6 +7,9 @@ import { Input } from "./input/Input";
 import type { InputAxis } from "./input/InputAxis";
 import type { InputConfig } from "./input/InputConfig";
 import type { Room } from "./room/Room";
+
+const DRAW_COLLISION_BOXES = true;
+const DRAW_SPRITE_BOXES = true;
 
 export class Game {
   private config: GameConfig;
@@ -17,6 +21,8 @@ export class Game {
   private entityToDraw: (Entity & Graphic) | null = null;
   // The graphic entity currently being executed (by onRun)
   private entityToExecute: (Entity & Spatial) | null = null;
+  // The Collider entity currently having its collisions handled (by onRun)
+  private entityToExecuteCollision: (Entity & Collider) | null = null;
   // Holds the img elements of the loaded spriteSets for the current room
   private spritesetsEl: HTMLDivElement | undefined;
   // Holds all entities that'll be processes by the logic loop
@@ -93,7 +99,6 @@ export class Game {
 
     // Always render
     this.renderFrame(delta);
-
     requestAnimationFrame(this.renderLoop.bind(this));
   }
 
@@ -111,8 +116,7 @@ export class Game {
         this.entityToExecute = this.currentRoom.entities[i] as Entity & Spatial;
         // Updates x and y speeds based on entity's rotation
         if (this.entityToExecute.Spatial.rotation !== 0) {
-          // Increments (or decrements) velocity's angle
-          // rotation is in degrees per second, so multiply by dt/1000 to convert to degrees per frame
+          // Increments (or decrements) velocity's angle (rotation is in degrees per second, so multiply by dt/1000 to convert to degrees per frame)
           this.entityToExecute.Spatial.velocity.setAngle(
             this.entityToExecute.Spatial.velocity.getAngle() +
               this.entityToExecute.Spatial.rotation * (dt / 1000)
@@ -123,7 +127,26 @@ export class Game {
           (this.entityToExecute.Spatial.velocity.x * dt) / 1000;
         this.entityToExecute.Spatial.position.y +=
           (this.entityToExecute.Spatial.velocity.y * dt) / 1000;
-        // TODO: handle collisions
+        // Handle collisions (if entity is Collider)
+        if (this.entityToExecute._is("Collider")) {
+          this.entityToExecuteCollision = this.entityToExecute as Entity &
+            Collider;
+          // Updates collision body position
+          this.entityToExecuteCollision.Collider.body.setPosition(
+            this.entityToExecuteCollision.Spatial.position.x,
+            this.entityToExecuteCollision.Spatial.position.y,
+            false
+          );
+          // Updates collison body scale
+          this.entityToExecuteCollision.Collider.body.setScale(
+            this.entityToExecuteCollision.Graphic.xScale,
+            this.entityToExecuteCollision.Graphic.yScale,
+            false
+          );
+          this.entityToExecuteCollision.Collider.body.updateBody();
+          // Resolves collision, if happened
+          this.currentRoom._resolveCollision(this.entityToExecuteCollision);
+        }
       }
     }
   }
@@ -132,77 +155,108 @@ export class Game {
    * Draws graphic entities on the canvas
    */
   private renderFrame(delta: number) {
+    // Clears canvas
     this.ctx?.clearRect(
       0,
       0,
       this.config.canvas.width,
       this.config.canvas.height
-    ); // clear canvas
-    for (let i = this.currentRoom.entities.length - 1; i >= 0; i--) {
-      if (this.currentRoom.entities[i]._is("Graphic")) {
-        // Updates current entityToDraw
-        this.entityToDraw = this.currentRoom.entities[i] as Entity & Graphic;
-        // Short-circuits if entity.shouldRender is false
-        if (!this.entityToDraw.Graphic.shouldRender) {
-          break;
+    );
+    for (
+      let i = this.currentRoom.sortedGraphicEntities.length - 1;
+      i >= 0;
+      i--
+    ) {
+      // Updates current entityToDraw
+      this.entityToDraw = this.currentRoom.sortedGraphicEntities[i] as Entity &
+        Graphic;
+      // Short-circuits if entity.shouldRender is false
+      if (!this.entityToDraw.Graphic.shouldRender) {
+        break;
+      }
+      // Calls entity's onRender method
+      this.entityToDraw.onRender(this, delta);
+      // Draw entity sprite on canvas
+      const ctx = this.ctx;
+      if (!ctx) return;
+
+      // Only use transformations if mirroring is needed (negative scale)
+      if (
+        this.entityToDraw.Graphic.xScale < 0 ||
+        this.entityToDraw.Graphic.yScale < 0
+      ) {
+        // Save context state for transformations
+        ctx.save();
+
+        // Translate to sprite position
+        ctx.translate(
+          this.entityToDraw.Spatial.position.x,
+          this.entityToDraw.Spatial.position.y
+        );
+
+        // Apply scaling (negative values will flip the sprite)
+        ctx.scale(
+          this.entityToDraw.Graphic.xScale,
+          this.entityToDraw.Graphic.yScale
+        );
+
+        // Adjust position for negative scales (flip origin)
+        if (this.entityToDraw.Graphic.xScale < 0) {
+          ctx.translate(-this.entityToDraw.Graphic.tile.width, 0);
         }
-        // Calls entity's onRender method
-        this.entityToDraw.onRender(this, delta);
-        // Draw entity sprite on canvas
-        const ctx = this.ctx;
-        if (!ctx) return;
+        if (this.entityToDraw.Graphic.yScale < 0) {
+          ctx.translate(0, -this.entityToDraw.Graphic.tile.height);
+        }
 
-        // Only use transformations if mirroring is needed (negative scale)
-        if (
-          this.entityToDraw.Graphic.xScale < 0 ||
-          this.entityToDraw.Graphic.yScale < 0
-        ) {
-          // Save context state for transformations
-          ctx.save();
-
-          // Translate to sprite position
-          ctx.translate(
-            this.entityToDraw.Spatial.position.x,
-            this.entityToDraw.Spatial.position.y
-          );
-
-          // Apply scaling (negative values will flip the sprite)
-          ctx.scale(
-            this.entityToDraw.Graphic.xScale,
-            this.entityToDraw.Graphic.yScale
-          );
-
-          // Adjust position for negative scales (flip origin)
-          if (this.entityToDraw.Graphic.xScale < 0) {
-            ctx.translate(-this.entityToDraw.Graphic.tile.width, 0);
-          }
-          if (this.entityToDraw.Graphic.yScale < 0) {
-            ctx.translate(0, -this.entityToDraw.Graphic.tile.height);
-          }
-
-          // Draw the image at (0, 0) relative to transformed context
-          ctx.drawImage(
-            this.entityToDraw.Graphic.spriteSet.img,
-            this.entityToDraw.Graphic.tile.xOrigin,
-            this.entityToDraw.Graphic.tile.yOrigin,
-            this.entityToDraw.Graphic.tile.width,
-            this.entityToDraw.Graphic.tile.height,
+        // Draw the image at (0, 0) relative to transformed context
+        ctx.drawImage(
+          this.entityToDraw.Graphic.spriteSet.img,
+          this.entityToDraw.Graphic.tile.xOrigin,
+          this.entityToDraw.Graphic.tile.yOrigin,
+          this.entityToDraw.Graphic.tile.width,
+          this.entityToDraw.Graphic.tile.height,
+          0,
+          0,
+          this.entityToDraw.Graphic.tile.width,
+          this.entityToDraw.Graphic.tile.height
+        );
+        // Draws entity's collision box (also relative to transformed context)
+        if (DRAW_SPRITE_BOXES) {
+          ctx.strokeStyle = "#00FFCC";
+          ctx.beginPath(); // Start a new path
+          ctx.rect(
             0,
             0,
             this.entityToDraw.Graphic.tile.width,
             this.entityToDraw.Graphic.tile.height
           );
+          ctx.stroke();
+        }
 
-          // Restore context state
-          ctx.restore();
-        } else {
-          // Direct drawImage for non-mirrored sprites (better performance)
-          ctx.drawImage(
-            this.entityToDraw.Graphic.spriteSet.img,
-            this.entityToDraw.Graphic.tile.xOrigin,
-            this.entityToDraw.Graphic.tile.yOrigin,
-            this.entityToDraw.Graphic.tile.width,
-            this.entityToDraw.Graphic.tile.height,
+        // Restores context state
+        ctx.restore();
+      }
+      // Renders entity without mirroring (no transformations)
+      else {
+        // Direct drawImage for non-mirrored sprites (better performance)
+        ctx.drawImage(
+          this.entityToDraw.Graphic.spriteSet.img,
+          this.entityToDraw.Graphic.tile.xOrigin,
+          this.entityToDraw.Graphic.tile.yOrigin,
+          this.entityToDraw.Graphic.tile.width,
+          this.entityToDraw.Graphic.tile.height,
+          this.entityToDraw.Spatial.position.x,
+          this.entityToDraw.Spatial.position.y,
+          this.entityToDraw.Graphic.tile.width *
+            this.entityToDraw.Graphic.xScale,
+          this.entityToDraw.Graphic.tile.height *
+            this.entityToDraw.Graphic.yScale
+        );
+        // Draws entity's collision box
+        if (DRAW_SPRITE_BOXES) {
+          ctx.strokeStyle = "#00FFCC";
+          ctx.beginPath(); // Start a new path
+          ctx.rect(
             this.entityToDraw.Spatial.position.x,
             this.entityToDraw.Spatial.position.y,
             this.entityToDraw.Graphic.tile.width *
@@ -210,8 +264,13 @@ export class Game {
             this.entityToDraw.Graphic.tile.height *
               this.entityToDraw.Graphic.yScale
           );
+          ctx.stroke();
         }
       }
+    }
+    // Draws Collider entities' collision boxes
+    if (DRAW_COLLISION_BOXES && this.ctx) {
+      this.currentRoom._drawCollisionBoxes(this.ctx);
     }
   }
 

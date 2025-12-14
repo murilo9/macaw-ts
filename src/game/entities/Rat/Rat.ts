@@ -1,12 +1,16 @@
+import { Circle } from "check2d";
 import { Entity } from "../../../core/entity/Entity";
-import type { Graphic } from "../../../core/entity/interfaces/Graphic";
+import type { Collider } from "../../../core/entity/interfaces/Collider";
 import type { Game } from "../../../core/Game";
 import { Vector2D } from "../../../core/utils/Vector2D";
 import { spriteSets } from "../../spritesets";
 import { rat0Animations } from "./animations";
 
 const SPEED = 80;
-export class Rat extends Entity implements Graphic {
+const X_POS = 300;
+const Y_POS = 200;
+
+export class Rat extends Entity implements Collider {
   Graphic = {
     spriteSet: spriteSets.Rat0SpriteSet,
     tile: rat0Animations.walking.currentTile,
@@ -16,10 +20,11 @@ export class Rat extends Entity implements Graphic {
     yScale: 2,
   };
   Spatial = {
-    position: new Vector2D({ x: 300, y: 200 }),
+    position: new Vector2D({ x: X_POS, y: Y_POS }),
     velocity: new Vector2D({ angle: 0, module: 0 }),
     rotation: 0,
   };
+  Collider = { body: new Circle({ x: X_POS, y: Y_POS }, 8), static: false };
 
   private isEating = false;
 
@@ -60,6 +65,7 @@ export class Rat extends Entity implements Graphic {
   }
 
   onRender(game: Game, dt: number): void {
+    // Updates animation frame
     this.Graphic.tile = this.animation.onUpdate(dt);
   }
 

@@ -1,7 +1,7 @@
 import { Animation } from "../../../core/entity/interfaces/Animation";
 import { spriteSets } from "../../spritesets";
 
-const SPEED = 8;
+const SPEED = 6;
 
 export const rat0Animations = {
   idle: new Animation(spriteSets.Rat0SpriteSet, SPEED, [

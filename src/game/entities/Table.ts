@@ -1,10 +1,14 @@
+import { Box } from "check2d";
 import { Entity } from "../../core/entity/Entity";
-import type { Graphic } from "../../core/entity/interfaces/Graphic";
+import type { Collider } from "../../core/entity/interfaces/Collider";
 import { Vector2D } from "../../core/utils/Vector2D";
 import { GLOBAL_SCALE } from "../constants";
 import { spriteSets } from "../spritesets";
 
-export class TableSmallSquared extends Entity implements Graphic {
+const X_POS = 100;
+const Y_POS = 200;
+
+export class TableSmallSquared extends Entity implements Collider {
   Graphic = {
     spriteSet: spriteSets.TablesSpriteSet,
     tile: spriteSets.TablesSpriteSet.tiles["table_sm_sq"],
@@ -14,9 +18,13 @@ export class TableSmallSquared extends Entity implements Graphic {
     yScale: GLOBAL_SCALE,
   };
   Spatial = {
-    position: new Vector2D({ x: 100, y: 200 }),
+    position: new Vector2D({ x: X_POS, y: Y_POS }),
     velocity: new Vector2D(),
     rotation: 0,
+  };
+  Collider = {
+    body: new Box({ x: X_POS, y: Y_POS }, GLOBAL_SCALE * 8, GLOBAL_SCALE * 4),
+    static: true,
   };
 
   constructor() {
