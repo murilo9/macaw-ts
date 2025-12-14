@@ -23,7 +23,7 @@ export class TableSmallSquared extends Entity implements Collider {
     rotation: 0,
   };
   Collider = {
-    body: new Box({ x: X_POS, y: Y_POS }, GLOBAL_SCALE * 8, GLOBAL_SCALE * 4),
+    body: new Box({ x: X_POS, y: Y_POS }, GLOBAL_SCALE * 8, GLOBAL_SCALE * 8),
     static: true,
   };
 
