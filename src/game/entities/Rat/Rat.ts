@@ -9,6 +9,8 @@ import { rat0Animations } from "./animations";
 const SPEED = 80;
 const X_POS = 300;
 const Y_POS = 200;
+const XY_SCALE = 2;
+const SPRITE_SIZE = 24;
 
 export class Rat extends Entity implements Collider {
   Graphic = {
@@ -16,8 +18,10 @@ export class Rat extends Entity implements Collider {
     tile: rat0Animations.walking.currentTile,
     shouldRender: true,
     depth: 0,
-    xScale: 2,
-    yScale: 2,
+    xScale: XY_SCALE,
+    yScale: XY_SCALE,
+    xPivot: SPRITE_SIZE / 2,
+    yPivot: SPRITE_SIZE,
   };
   Spatial = {
     position: new Vector2D({ x: X_POS, y: Y_POS }),
@@ -45,6 +49,9 @@ export class Rat extends Entity implements Collider {
   }
 
   onInit(game: Game) {
+    // Applies collision body circle offset
+    this.Collider.body.offset.x = SPRITE_SIZE;
+    this.Collider.body.offset.y = SPRITE_SIZE;
     // Listens to the Input keyUp event in order to eat cheese
     game.onKeyUp((key) => {
       if (key === "Space") {
@@ -72,7 +79,7 @@ export class Rat extends Entity implements Collider {
   onRun() {
     // Mirrors sprite on xSpeed flip
     if (this.Spatial.velocity.x !== 0) {
-      this.Graphic.xScale = this.Spatial.velocity.x > 0 ? 2 : -2;
+      this.Graphic.xScale = this.Spatial.velocity.x > 0 ? XY_SCALE : -XY_SCALE;
     }
     // Changes animation to idle if finished eating cheese
     if (this.animation.isFinished) {

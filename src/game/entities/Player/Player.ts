@@ -14,6 +14,8 @@ export class Player extends Entity implements Graphic {
     depth: 0,
     xScale: GLOBAL_SCALE,
     yScale: GLOBAL_SCALE,
+    xPivot: 0,
+    yPivot: 0,
   };
   Spatial = {
     position: new Vector2D({ x: 200, y: 200 }),

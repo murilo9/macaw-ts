@@ -1,8 +1,14 @@
 import type { Graphic } from "../entity/interfaces/Graphic";
 
 const DRAW_SPRITE_BOXES = true;
+const DRAW_PIVOT_CROSS = true;
 
 export function drawEntity(entity: Graphic, ctx: CanvasRenderingContext2D) {
+  // Determinates scaled sizes
+  const scaledXPivot = entity.Graphic.xPivot * entity.Graphic.xScale;
+  const scaledYPivot = entity.Graphic.yPivot * entity.Graphic.yScale;
+  const scaledTileWidth = entity.Graphic.tile.width * entity.Graphic.xScale;
+  const scaledTileHeight = entity.Graphic.tile.height * entity.Graphic.yScale;
   // Only use transformations if mirroring is needed (negative scale)
   if (entity.Graphic.xScale < 0 || entity.Graphic.yScale < 0) {
     // Save context state for transformations
@@ -71,5 +77,28 @@ export function drawEntity(entity: Graphic, ctx: CanvasRenderingContext2D) {
       );
       ctx.stroke();
     }
+  }
+  if (DRAW_PIVOT_CROSS) {
+    ctx.strokeStyle = "#FF0000";
+    ctx.beginPath();
+    // Draws the horizontal line
+    ctx.moveTo(
+      entity.Spatial.position.x - scaledTileWidth / 2 + scaledXPivot,
+      entity.Spatial.position.y + scaledYPivot
+    );
+    ctx.lineTo(
+      entity.Spatial.position.x + scaledTileWidth / 2 + scaledXPivot,
+      entity.Spatial.position.y + scaledYPivot
+    );
+    // Draws the vertical line
+    ctx.moveTo(
+      entity.Spatial.position.x + scaledXPivot,
+      entity.Spatial.position.y - scaledTileHeight / 2 + scaledYPivot
+    );
+    ctx.lineTo(
+      entity.Spatial.position.x + scaledXPivot,
+      entity.Spatial.position.y + scaledTileHeight / 2 + scaledYPivot
+    );
+    ctx.stroke();
   }
 }

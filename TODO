@@ -1,4 +1,4 @@
-- Animation control (stop, repeat, reverse, repeat-reverse)
+- Prevent handling collisions of static collider entities
 - Camera binding
 - Render radius and processing radius (Spatial/Graphic entities outside the camera's radius won't be executed/rendered)
 - Events
