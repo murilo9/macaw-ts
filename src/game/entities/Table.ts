@@ -7,7 +7,7 @@ import { spriteSets } from "../spritesets";
 
 const X_POS = 100;
 const Y_POS = 200;
-const TILE_SIZE = 8;
+const TILE_SIZE = 32;
 
 export class TableSmallSquared extends Entity implements Collider {
   Graphic = {
@@ -18,7 +18,7 @@ export class TableSmallSquared extends Entity implements Collider {
     xScale: GLOBAL_SCALE,
     yScale: GLOBAL_SCALE,
     xPivot: 0,
-    yPivot: 0,
+    yPivot: TILE_SIZE,
   };
   Spatial = {
     position: new Vector2D({ x: X_POS, y: Y_POS }),
@@ -26,16 +26,15 @@ export class TableSmallSquared extends Entity implements Collider {
     rotation: 0,
   };
   Collider = {
-    body: new Box(
-      { x: X_POS, y: Y_POS },
-      GLOBAL_SCALE * TILE_SIZE,
-      GLOBAL_SCALE * TILE_SIZE,
-      { isStatic: true }
-    ),
+    body: new Box({ x: X_POS, y: Y_POS }, TILE_SIZE, TILE_SIZE / 2, {
+      isStatic: true,
+    }),
     static: true,
   };
 
   constructor() {
     super();
+    // Sets collision body offset
+    this.Collider.body.offset.y = -(TILE_SIZE / 2) * GLOBAL_SCALE;
   }
 }

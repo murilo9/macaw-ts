@@ -15,7 +15,7 @@ export interface Graphic extends Spatial {
     xScale: number;
     // Used to scale sprite drawing
     yScale: number;
-    // Usually the entity's sprite width / 2
+    // Usually the entity's sprite width / 2, or 0
     xPivot: number;
     // Usually the entity's sprite height - distance from feet to bottom
     yPivot: number;

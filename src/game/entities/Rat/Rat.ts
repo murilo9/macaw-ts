@@ -11,6 +11,8 @@ const X_POS = 300;
 const Y_POS = 200;
 const XY_SCALE = 2;
 const SPRITE_SIZE = 24;
+const FEET_TO_BASE = 6;
+const RADIUS = 6; // No need to depend on the scale (the library handles scaling automatically)
 
 export class Rat extends Entity implements Collider {
   Graphic = {
@@ -21,14 +23,17 @@ export class Rat extends Entity implements Collider {
     xScale: XY_SCALE,
     yScale: XY_SCALE,
     xPivot: SPRITE_SIZE / 2,
-    yPivot: SPRITE_SIZE,
+    yPivot: SPRITE_SIZE - FEET_TO_BASE,
   };
   Spatial = {
     position: new Vector2D({ x: X_POS, y: Y_POS }),
     velocity: new Vector2D({ angle: 0, module: 0 }),
     rotation: 0,
   };
-  Collider = { body: new Circle({ x: X_POS, y: Y_POS }, 8), static: false };
+  Collider = {
+    body: new Circle({ x: X_POS, y: Y_POS }, RADIUS),
+    static: false,
+  };
 
   private isEating = false;
 
@@ -49,9 +54,8 @@ export class Rat extends Entity implements Collider {
   }
 
   onInit(game: Game) {
-    // Applies collision body circle offset
-    this.Collider.body.offset.x = SPRITE_SIZE;
-    this.Collider.body.offset.y = SPRITE_SIZE;
+    // Setts collison box offset
+    this.Collider.body.offset.y = -FEET_TO_BASE * XY_SCALE;
     // Listens to the Input keyUp event in order to eat cheese
     game.onKeyUp((key) => {
       if (key === "Space") {

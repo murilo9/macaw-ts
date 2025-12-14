@@ -1,3 +1,4 @@
+- Add a offset attribute to Collider interface so it reflects automatically to the collision body actual offset (no need to manually set offset in the constructor naymore)
 - Prevent handling collisions of static collider entities
 - Camera binding
 - Render radius and processing radius (Spatial/Graphic entities outside the camera's radius won't be executed/rendered)

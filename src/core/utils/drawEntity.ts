@@ -1,6 +1,6 @@
 import type { Graphic } from "../entity/interfaces/Graphic";
 
-const DRAW_SPRITE_BOXES = true;
+const DRAW_SPRITE_BOXES = false;
 const DRAW_PIVOT_CROSS = true;
 
 export function drawEntity(entity: Graphic, ctx: CanvasRenderingContext2D) {
@@ -35,8 +35,8 @@ export function drawEntity(entity: Graphic, ctx: CanvasRenderingContext2D) {
       entity.Graphic.tile.yOrigin,
       entity.Graphic.tile.width,
       entity.Graphic.tile.height,
-      0,
-      0,
+      0 - scaledXPivot / Math.abs(entity.Graphic.xScale),
+      0 - scaledYPivot / Math.abs(entity.Graphic.yScale),
       entity.Graphic.tile.width,
       entity.Graphic.tile.height
     );
@@ -60,12 +60,12 @@ export function drawEntity(entity: Graphic, ctx: CanvasRenderingContext2D) {
       entity.Graphic.tile.yOrigin,
       entity.Graphic.tile.width,
       entity.Graphic.tile.height,
-      entity.Spatial.position.x,
-      entity.Spatial.position.y,
+      entity.Spatial.position.x - scaledXPivot,
+      entity.Spatial.position.y - scaledYPivot,
       entity.Graphic.tile.width * entity.Graphic.xScale,
       entity.Graphic.tile.height * entity.Graphic.yScale
     );
-    // Draws entity's collision box
+    // Draws entity's sprite tile box
     if (DRAW_SPRITE_BOXES) {
       ctx.strokeStyle = "#00FFCC";
       ctx.beginPath(); // Start a new path
@@ -78,26 +78,27 @@ export function drawEntity(entity: Graphic, ctx: CanvasRenderingContext2D) {
       ctx.stroke();
     }
   }
+  // Draw entity's pivot cross
   if (DRAW_PIVOT_CROSS) {
     ctx.strokeStyle = "#FF0000";
     ctx.beginPath();
     // Draws the horizontal line
     ctx.moveTo(
-      entity.Spatial.position.x - scaledTileWidth / 2 + scaledXPivot,
-      entity.Spatial.position.y + scaledYPivot
+      entity.Spatial.position.x - scaledTileWidth / 2,
+      entity.Spatial.position.y
     );
     ctx.lineTo(
-      entity.Spatial.position.x + scaledTileWidth / 2 + scaledXPivot,
-      entity.Spatial.position.y + scaledYPivot
+      entity.Spatial.position.x + scaledTileWidth / 2,
+      entity.Spatial.position.y
     );
     // Draws the vertical line
     ctx.moveTo(
-      entity.Spatial.position.x + scaledXPivot,
-      entity.Spatial.position.y - scaledTileHeight / 2 + scaledYPivot
+      entity.Spatial.position.x,
+      entity.Spatial.position.y - scaledTileHeight / 2
     );
     ctx.lineTo(
-      entity.Spatial.position.x + scaledXPivot,
-      entity.Spatial.position.y + scaledTileHeight / 2 + scaledYPivot
+      entity.Spatial.position.x,
+      entity.Spatial.position.y + scaledTileHeight / 2
     );
     ctx.stroke();
   }

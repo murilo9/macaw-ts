@@ -137,11 +137,11 @@ export class Room {
    * @param ctx
    */
   public _drawCollisionBoxes(ctx: CanvasRenderingContext2D) {
-    ctx.strokeStyle = "#FF00CC";
+    ctx.fillStyle = "rgba(0,255,0,0.2)";
     ctx.beginPath();
     // draw whole system
     this.collisionSystem.draw(ctx);
-    ctx.stroke();
+    ctx.fill();
   }
 
   // ------------------------- OVERRIDEABLE -------------------------
