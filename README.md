@@ -3,7 +3,7 @@
 The game consists of a room that contains entities.
 The game executes logic loops and render loops.
 A **logic loop** process all entities' logic.
-A **render loop** renders all graphical entities's sprites on the screen (canvas).
+A **render loop** renders all graphical entities's sprites on the screen (HTML canvas).
 
 ### Game lifecycle
 
@@ -27,10 +27,18 @@ Entities may call game's stop method to close the game.
 
 Entities can get other entities through the game's getEntity method, passing the target entity's id as parameter.
 
+### Types of Entities
+
+Entities can implement interfaces to have specific behaviors:
+
+- A **Spatial** entity has a position, velocity and rotation in the room, but is not rendered by itself.
+- A **Graphic** entity is a **Spatial** entity that also has a *sprite* that can be rendered in the room. It has no collision phisics by itself. An **Animation** instance can provide a list of tiles that can be used to render an animation for the Graphic entitiy's sprite over time.
+- A **Collider** entity is a **Graphic** entity that also has a *collision body* that allows it to interact physically with other Collider entities.
+
 ### How are Graphic entities rendered
 
 During the render loop, the game will iterate the graphic entities list (which is sorted by depth) and render each entity.
-In order to render a graphic entity, the game access the entity's Graphic interface in order to get its spriteSet (so it ca get the img element and current title) and render the tile on the canvas.
+In order to render a graphic entity, the game access the entity's Graphic interface in order to get its spriteSet (so it can get the img element and current title) and render the tile on the canvas.
 
 An entity is rendered based on their depth. Every time an entity's depth changes, it should call the game's ondepthUpdate method so the room's sortedGraphicEntities array can be re-sorted. Not doing this will cause the changed entity's depth to have no effect on the rendering order.
 
@@ -66,7 +74,7 @@ _this is a tough one_
 
 ### How do entities read data from the Input layer
 
-The game instance has an Input instance, and will let a universal keypress event listener update its attributes. Entities then can read data from it. The input instance has an input config (a key map, defined in the constructor) that maps keyboard keys to the inputs (axis, etc). The input has a listener (array of callbacks) that entities can subscribe to (through Game's onKe/onKeuUp/onKeyDown methods) in order to listen to its events.
+The game instance has an **Input** instance, and will let a universal keypress event listener update its attributes. Entities then can read data from it. The input instance has an input config (a key map, defined in the constructor) that maps keyboard keys to the inputs (axis, etc). The input has a listener (array of callbacks) that entities can subscribe to (through Game's onKe/onKeuUp/onKeyDown methods) in order to listen to its events.
 _For the mouse, the game will listen to all move and click events, and provide a listener (array of callbacks) that entities can subscribe to. The game will also provide a more specific click listener that graphic entities can listen to in order to know whether the mouse clicked on them._
 
 ### How does collisions work
@@ -75,11 +83,25 @@ An entity that has collision must implement the Collider interface, which includ
 
 ### How do entities interact with the Sound layer
 
-_the game instance should have a list of audios (from JS Audio API) and provide method for the entities to interact with it?_
+_the game instance should have a list of audios (from JS Audio API) and provide methods for the entities to interact with it?_
 
 ### How do entities interact with the File System layer
 
-_ (.-.) _
+_i have no fucking idea yet_
+
+### Graphic debugging
+
+The Game config has a debug attribute containing a set of attributes that defines debuggind settings:
+
+- `drawCollisionBoxes`: if true, will draw a green box for each Collider entity's collision box.
+- `drawSpriteBoxes`: if true, will draw a cyan box for each Graphic entity's tile.
+- `drawPivotCrosses`: if true, will draw a red cross centered on each Graphic entity' pivot.
+
+### Usual Game lifecycle
+
+### Spriteset Viewer
+
+The Spriteset Viewer (enable in App.tsx MODE variable) allows you to see all the game's Spritesets and their respective tiles.
 
 ### Q&As
 

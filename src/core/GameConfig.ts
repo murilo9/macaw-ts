@@ -7,4 +7,9 @@ export type GameConfig = {
     height: number;
     background: string;
   };
+  debug: {
+    drawCollisionBoxes: boolean;
+    drawSpriteBoxes: boolean;
+    drawPivotCrosses: boolean;
+  };
 };

@@ -1,9 +1,6 @@
 import type { Graphic } from "../entity/interfaces/Graphic";
 
-const DRAW_SPRITE_BOXES = false;
-const DRAW_PIVOT_CROSS = true;
-
-export function drawEntity(entity: Graphic, ctx: CanvasRenderingContext2D) {
+export function drawEntity(entity: Graphic, ctx: CanvasRenderingContext2D, drawSpriteBox: boolean, drawPivotCross: boolean) {
   // Determinates scaled sizes
   const scaledXPivot = entity.Graphic.xPivot * entity.Graphic.xScale;
   const scaledYPivot = entity.Graphic.yPivot * entity.Graphic.yScale;
@@ -40,8 +37,8 @@ export function drawEntity(entity: Graphic, ctx: CanvasRenderingContext2D) {
       entity.Graphic.tile.width,
       entity.Graphic.tile.height
     );
-    // Draws entity's collision box (also relative to transformed context)
-    if (DRAW_SPRITE_BOXES) {
+    // Draws entity's sprite tile box (also relative to transformed context)
+    if (drawSpriteBox) {
       ctx.strokeStyle = "#00FFCC";
       ctx.beginPath(); // Start a new path
       ctx.rect(0, 0, entity.Graphic.tile.width, entity.Graphic.tile.height);
@@ -66,7 +63,7 @@ export function drawEntity(entity: Graphic, ctx: CanvasRenderingContext2D) {
       entity.Graphic.tile.height * entity.Graphic.yScale
     );
     // Draws entity's sprite tile box
-    if (DRAW_SPRITE_BOXES) {
+    if (drawSpriteBox) {
       ctx.strokeStyle = "#00FFCC";
       ctx.beginPath(); // Start a new path
       ctx.rect(
@@ -79,7 +76,7 @@ export function drawEntity(entity: Graphic, ctx: CanvasRenderingContext2D) {
     }
   }
   // Draw entity's pivot cross
-  if (DRAW_PIVOT_CROSS) {
+  if (drawPivotCross) {
     ctx.strokeStyle = "#FF0000";
     ctx.beginPath();
     // Draws the horizontal line

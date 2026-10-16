@@ -11,8 +11,6 @@ import { drawEntity } from "./utils/drawEntity";
 import { processateEntityCollisions } from "./utils/processateEntityCollisions";
 import { processateSpatialEntity } from "./utils/processateSpatialEntity";
 
-const DRAW_COLLISION_BOXES = true;
-
 export class Game {
   private config: GameConfig;
   private input: Input;
@@ -158,10 +156,10 @@ export class Game {
       if (!this.ctx) return;
 
       // Draws entity sprite on canvas
-      drawEntity(this.entityToDraw, this.ctx);
+      drawEntity(this.entityToDraw, this.ctx, this.config.debug.drawSpriteBoxes, this.config.debug.drawPivotCrosses);
     }
     // Draws Collider entities' collision boxes
-    if (DRAW_COLLISION_BOXES && this.ctx) {
+    if (this.config.debug.drawCollisionBoxes && this.ctx) {
       this.currentRoom._drawCollisionBoxes(this.ctx);
     }
   }
