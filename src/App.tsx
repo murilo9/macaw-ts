@@ -6,7 +6,7 @@ import SpriteSetViewer from "./core/spriteset-viewer/SpriteSetViewer";
 import { WorldRoom } from "./game/rooms/World";
 
 // Defines whether it'll be displaed the game or a developer tool
-const MODE: "game" | "spriteset_viewer" = "spriteset_viewer";
+const MODE: "game" | "spriteset_viewer" = "game";
 
 const gameConfig: GameConfig = {
   initialRoom: new WorldRoom(),
@@ -16,10 +16,10 @@ const gameConfig: GameConfig = {
     height: 480,
   },
   debug: {
-    drawCollisionBoxes: true,
+    drawCollisionBoxes: false,
     drawSpriteBoxes: true,
-    drawPivotCrosses: true
-  }
+    drawPivotCrosses: true,
+  },
 };
 
 const inputConfig: InputConfig = {

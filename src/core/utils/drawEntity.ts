@@ -1,6 +1,11 @@
 import type { Graphic } from "../entity/interfaces/Graphic";
 
-export function drawEntity(entity: Graphic, ctx: CanvasRenderingContext2D, drawSpriteBox: boolean, drawPivotCross: boolean) {
+export function drawEntity(
+  entity: Graphic,
+  ctx: CanvasRenderingContext2D,
+  drawSpriteBox: boolean,
+  drawPivotCross: boolean,
+) {
   // Determinates scaled sizes
   const scaledXPivot = entity.Graphic.xPivot * entity.Graphic.xScale;
   const scaledYPivot = entity.Graphic.yPivot * entity.Graphic.yScale;
@@ -35,16 +40,8 @@ export function drawEntity(entity: Graphic, ctx: CanvasRenderingContext2D, drawS
       0 - scaledXPivot / Math.abs(entity.Graphic.xScale),
       0 - scaledYPivot / Math.abs(entity.Graphic.yScale),
       entity.Graphic.tile.width,
-      entity.Graphic.tile.height
+      entity.Graphic.tile.height,
     );
-    // Draws entity's sprite tile box (also relative to transformed context)
-    if (drawSpriteBox) {
-      ctx.strokeStyle = "#00FFCC";
-      ctx.beginPath(); // Start a new path
-      ctx.rect(0, 0, entity.Graphic.tile.width, entity.Graphic.tile.height);
-      ctx.stroke();
-    }
-
     // Restores context state
     ctx.restore();
   }
@@ -60,20 +57,20 @@ export function drawEntity(entity: Graphic, ctx: CanvasRenderingContext2D, drawS
       entity.Spatial.position.x - scaledXPivot,
       entity.Spatial.position.y - scaledYPivot,
       entity.Graphic.tile.width * entity.Graphic.xScale,
-      entity.Graphic.tile.height * entity.Graphic.yScale
+      entity.Graphic.tile.height * entity.Graphic.yScale,
     );
-    // Draws entity's sprite tile box
-    if (drawSpriteBox) {
-      ctx.strokeStyle = "#00FFCC";
-      ctx.beginPath(); // Start a new path
-      ctx.rect(
-        entity.Spatial.position.x,
-        entity.Spatial.position.y,
-        entity.Graphic.tile.width * entity.Graphic.xScale,
-        entity.Graphic.tile.height * entity.Graphic.yScale
-      );
-      ctx.stroke();
-    }
+  }
+  // Draws entity's sprite tile box
+  if (drawSpriteBox) {
+    ctx.strokeStyle = "#00FFCC";
+    ctx.beginPath(); // Start a new path
+    ctx.rect(
+      entity.Spatial.position.x - scaledXPivot,
+      entity.Spatial.position.y - scaledYPivot,
+      entity.Graphic.tile.width * entity.Graphic.xScale,
+      entity.Graphic.tile.height * entity.Graphic.yScale,
+    );
+    ctx.stroke();
   }
   // Draw entity's pivot cross
   if (drawPivotCross) {
@@ -82,20 +79,20 @@ export function drawEntity(entity: Graphic, ctx: CanvasRenderingContext2D, drawS
     // Draws the horizontal line
     ctx.moveTo(
       entity.Spatial.position.x - scaledTileWidth / 2,
-      entity.Spatial.position.y
+      entity.Spatial.position.y,
     );
     ctx.lineTo(
       entity.Spatial.position.x + scaledTileWidth / 2,
-      entity.Spatial.position.y
+      entity.Spatial.position.y,
     );
     // Draws the vertical line
     ctx.moveTo(
       entity.Spatial.position.x,
-      entity.Spatial.position.y - scaledTileHeight / 2
+      entity.Spatial.position.y - scaledTileHeight / 2,
     );
     ctx.lineTo(
       entity.Spatial.position.x,
-      entity.Spatial.position.y + scaledTileHeight / 2
+      entity.Spatial.position.y + scaledTileHeight / 2,
     );
     ctx.stroke();
   }

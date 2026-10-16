@@ -1,16 +1,40 @@
+import type { Graphic } from "../entity/interfaces/Graphic";
 import type { InputAxis } from "./InputAxis";
 import type { InputConfig } from "./InputConfig";
+
+export type PointerPosition = {
+  x: number;
+  y: number;
+};
+
+export type PointerButton = {
+  right: boolean;
+  left: boolean;
+  middle: boolean;
+};
 
 export class Input {
   private config: InputConfig;
   private axis1: InputAxis;
   private axis2: InputAxis;
+  private pointer: {
+    position: PointerPosition;
+    button: PointerButton;
+  };
   private keyDownListeners: Array<(key: string) => void>;
   private keyUpListeners: Array<(key: string) => void>;
   private keyListeners: Array<(key: string, type: "up" | "down") => void>;
   private axis1Listeners: Array<(axis: InputAxis) => void>;
   private axis2Listeners: Array<(axis: InputAxis) => void>;
-  private boundHandleMouseClick!: (event: PointerEvent) => void;
+  private pointerPressListeners: Array<(buttons: PointerButton) => void>;
+  private pointerReleaseListeners: Array<(buttons: PointerButton) => void>;
+  private pointerMoveListeners: {
+    move: Array<(position: PointerPosition) => void>;
+    over: Array<{ entity: Graphic; callback: (isOver: boolean) => void }>;
+  };
+  private boundHandlePointerUp!: (event: PointerEvent) => void;
+  private boundHandlePointerDown!: (event: PointerEvent) => void;
+  private boundHandlePointerMove!: (event: PointerEvent) => void;
   private boundHandleKeyDownEvent!: (event: KeyboardEvent) => void;
   private boundHandleKeyUpEvent!: (event: KeyboardEvent) => void;
 
@@ -39,36 +63,142 @@ export class Input {
       right: 0,
       up: 0,
     };
+    this.pointer = {
+      button: {
+        left: false,
+        right: false,
+        middle: false,
+      },
+      position: {
+        x: 0,
+        y: 0,
+      },
+    };
     this.keyDownListeners = [];
     this.keyUpListeners = [];
     this.keyListeners = [];
     this.axis1Listeners = [];
     this.axis2Listeners = [];
+    this.pointerPressListeners = [];
+    this.pointerReleaseListeners = [];
+    this.pointerMoveListeners = { move: [], over: [] };
   }
 
   private technicalSetup() {
     // Bind event handlers to preserve 'this' context
-    this.boundHandleMouseClick = this.handleMouseClick.bind(this);
+    this.boundHandlePointerUp = this.handlePointerUp.bind(this);
+    this.boundHandlePointerDown = this.handlePointerDown.bind(this);
+    this.boundHandlePointerMove = this.handlePointerMove.bind(this);
     this.boundHandleKeyDownEvent = this.handleKeyDownEvent.bind(this);
     this.boundHandleKeyUpEvent = this.handleKeyUpEvent.bind(this);
 
+    // Prevents context menu from working, so "pointerup" events can work for right mouse button
+    addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+    });
+
     // Setup event listeners
-    window.addEventListener("click", this.boundHandleMouseClick);
+    window.addEventListener("pointerup", this.boundHandlePointerUp);
+    window.addEventListener("pointerdown", this.boundHandlePointerDown);
+    window.addEventListener("pointermove", this.boundHandlePointerMove);
     window.addEventListener("keydown", this.boundHandleKeyDownEvent);
     window.addEventListener("keyup", this.boundHandleKeyUpEvent);
   }
 
   /**
-   * Cleans up listeners (mouse, keyboard) to the browser's window object.
+   * Cleans up listeners (pointer, keyboard) to the browser's window object.
    */
   technicalCleanup() {
-    window.removeEventListener("click", this.boundHandleMouseClick);
+    window.removeEventListener("pointerup", this.boundHandlePointerUp);
+    window.removeEventListener("pointerdown", this.boundHandlePointerDown);
     window.removeEventListener("keydown", this.boundHandleKeyDownEvent);
     window.removeEventListener("keyup", this.boundHandleKeyUpEvent);
   }
 
-  private handleMouseClick(event: PointerEvent) {
-    // TODO: update Input instance
+  /**
+   * Hanles a pointerup event from window
+   * @param event The event from window
+   */
+  private handlePointerUp(event: PointerEvent) {
+    this.updatePointerPosition(event.x, event.y);
+    switch (event.button) {
+      case 0:
+        this.pointer.button.left = false;
+        break;
+      case 1:
+        this.pointer.button.middle = false;
+        break;
+      case 2:
+        this.pointer.button.right = false;
+        break;
+    }
+    this.pointer.position.x = event.x;
+    this.pointer.position.y = event.y;
+  }
+
+  /**
+   * Hanles a pointerdown event from window
+   * @param event The event from window
+   */
+  private handlePointerDown(event: PointerEvent) {
+    this.updatePointerPosition(event.x, event.y);
+    switch (event.button) {
+      case 0:
+        this.pointer.button.left = true;
+        break;
+      case 1:
+        this.pointer.button.middle = true;
+        break;
+      case 2:
+        this.pointer.button.right = true;
+        break;
+    }
+  }
+
+  private updatePointerPosition(x: number, y: number) {
+    this.pointer.position.x = x;
+    this.pointer.position.y = y;
+  }
+
+  /**
+   * Checks which entities the pointer is over
+   */
+  private checkOverEntities() {
+    this.pointerMoveListeners.over.forEach(({ callback, entity }) => {
+      // If cursor is over entity, calls callback
+      const entityPosX = entity.Spatial.position.x;
+      const entityPosY = entity.Spatial.position.y;
+      const scaledXPivot = entity.Graphic.xScale * entity.Graphic.xPivot;
+      const scaledYPivot = entity.Graphic.yScale * entity.Graphic.yPivot;
+      const entityScaledTileWidth =
+        entity.Graphic.tile.width * entity.Graphic.xScale;
+      const entityScaledTileHeight =
+        entity.Graphic.tile.height * entity.Graphic.yScale;
+
+      const entityStartX = entityPosX - scaledXPivot;
+      const entityEndX = entityStartX + entityScaledTileWidth;
+      const entityStartY = entityPosY - scaledYPivot;
+      const entityEndY = entityStartY + entityScaledTileHeight;
+
+      const pointerIsOverX =
+        this.pointer.position.x >= entityStartX &&
+        this.pointer.position.x <= entityEndX;
+      const pointerIsOverY =
+        this.pointer.position.y >= entityStartY &&
+        this.pointer.position.y <= entityEndY;
+      callback(pointerIsOverX && pointerIsOverY);
+    });
+  }
+
+  /**
+   * Hanles a pointermove event from window
+   * @param event The event from window
+   */
+  private handlePointerMove(event: PointerEvent) {
+    // Updates pointer position
+    this.updatePointerPosition(event.x, event.y);
+    // Checks if pointer is over entities
+    this.checkOverEntities();
   }
 
   /**
@@ -185,5 +315,42 @@ export class Input {
    */
   public onAxis2Change(callback: (axis: InputAxis) => void) {
     this.axis2Listeners.push(callback);
+  }
+
+  /**
+   * Subscriber for pointer press events
+   * @param callback
+   * @param entity the entity to check the press on
+   */
+  public onPointerPress(
+    callback: (buttons: PointerButton) => void,
+    entity?: Graphic,
+  ) {
+    this.pointerPressListeners.push(callback);
+  }
+
+  /**
+   * Subscriber for pointer release events
+   * @param callback
+   * @param entity the entity to check the press off
+   */
+  public onPointerRelease(
+    callback: (buttons: PointerButton) => void,
+    entity?: Graphic,
+  ) {
+    this.pointerReleaseListeners.push(callback);
+  }
+
+  /**
+   * Subscriber for pointer move events
+   * @param callback
+   * @param entity
+   */
+  public onPointerMove(callback: (position: PointerPosition) => void) {
+    this.pointerMoveListeners.move.push(callback);
+  }
+
+  public onPointerOver(entity: Graphic, callback: (isOver: boolean) => void) {
+    this.pointerMoveListeners.over.push({ entity, callback });
   }
 }

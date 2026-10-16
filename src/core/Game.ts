@@ -3,7 +3,7 @@ import type { Collider } from "./entity/interfaces/Collider";
 import type { Graphic } from "./entity/interfaces/Graphic";
 import type { Spatial } from "./entity/interfaces/Spatial";
 import type { GameConfig } from "./GameConfig";
-import { Input } from "./input/Input";
+import { Input, type PointerPosition } from "./input/Input";
 import type { InputAxis } from "./input/InputAxis";
 import type { InputConfig } from "./input/InputConfig";
 import type { Room } from "./room/Room";
@@ -55,8 +55,8 @@ export class Game {
     await Promise.all(
       Array.from(document.images).map(
         (image) =>
-          new Promise((resolve) => image.addEventListener("load", resolve))
-      )
+          new Promise((resolve) => image.addEventListener("load", resolve)),
+      ),
     );
 
     this.isRunning = true;
@@ -92,7 +92,7 @@ export class Game {
     // Re-sorts current room's sortedGraphicEntities array, if needed
     if (this.shouldResortGraphicEntities) {
       this.currentRoom.sortedGraphicEntities.sort(
-        (entityA, entityB) => entityA.Graphic.depth - entityB.Graphic.depth
+        (entityA, entityB) => entityA.Graphic.depth - entityB.Graphic.depth,
       );
       this.shouldResortGraphicEntities = false;
     }
@@ -136,7 +136,7 @@ export class Game {
       0,
       0,
       this.config.canvas.width,
-      this.config.canvas.height
+      this.config.canvas.height,
     );
     for (
       let i = this.currentRoom.sortedGraphicEntities.length - 1;
@@ -156,7 +156,12 @@ export class Game {
       if (!this.ctx) return;
 
       // Draws entity sprite on canvas
-      drawEntity(this.entityToDraw, this.ctx, this.config.debug.drawSpriteBoxes, this.config.debug.drawPivotCrosses);
+      drawEntity(
+        this.entityToDraw,
+        this.ctx,
+        this.config.debug.drawSpriteBoxes,
+        this.config.debug.drawPivotCrosses,
+      );
     }
     // Draws Collider entities' collision boxes
     if (this.config.debug.drawCollisionBoxes && this.ctx) {
@@ -177,7 +182,7 @@ export class Game {
   public setCurrentRoom(room: Room) {
     if (!this.spritesetsEl) {
       throw new Error(
-        "Game's spritesetsEl could not be found on setCurrentRoom"
+        "Game's spritesetsEl could not be found on setCurrentRoom",
       );
     }
     // Clears the current (soon-to-be-previous) room
@@ -236,9 +241,17 @@ export class Game {
     this.input.onKeyDown(callback);
   }
 
+  public onPointerMove(callback: (position: PointerPosition) => void) {
+    this.input.onPointerMove(callback);
+  }
+
+  public onPointerOver(entity: Graphic, callback: (isOver: boolean) => void) {
+    this.input.onPointerOver(entity, callback);
+  }
+
   public onAxisChange(
     axis: "axis1" | "axis2",
-    callback: (axis: InputAxis) => void
+    callback: (axis: InputAxis) => void,
   ) {
     switch (axis) {
       case "axis1":

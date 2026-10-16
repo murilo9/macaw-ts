@@ -7,8 +7,8 @@ import { spriteSets } from "../../spritesets";
 import { rat0Animations } from "./animations";
 
 const SPEED = 80;
-const X_POS = 300;
-const Y_POS = 200;
+const X_POS = 400;
+const Y_POS = 400;
 const XY_SCALE = 2;
 const SPRITE_SIZE = 24;
 const FEET_TO_BASE = 6;
@@ -22,7 +22,7 @@ export class Rat extends Entity implements Collider {
     depth: 0,
     xScale: XY_SCALE,
     yScale: XY_SCALE,
-    xPivot: SPRITE_SIZE / 2,
+    xPivot: SPRITE_SIZE / 2, // This division is not related to scale!
     yPivot: SPRITE_SIZE - FEET_TO_BASE,
   };
   Spatial = {
@@ -66,12 +66,15 @@ export class Rat extends Entity implements Collider {
     game.onAxisChange("axis1", (axis) => {
       this.Spatial.velocity.setXY(
         (-axis.left + axis.right) * SPEED,
-        (-axis.up + axis.down) * SPEED
+        (-axis.up + axis.down) * SPEED,
       );
       this.animation =
         Boolean(-axis.left + axis.right) || Boolean(-axis.up + axis.down)
           ? rat0Animations.walking
           : rat0Animations.idle;
+    });
+    game.onPointerOver(this, (isOver: boolean) => {
+      if (isOver) console.log("Mouse is over Rat");
     });
   }
 
