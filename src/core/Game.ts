@@ -1,3 +1,8 @@
+import {
+  GameEvents,
+  type GameEventListeners,
+  type GameEventOn,
+} from "../game/GameEvents";
 import type { Entity } from "./entity/Entity";
 import type { Collider } from "./entity/interfaces/Collider";
 import type { Graphic } from "./entity/interfaces/Graphic";
@@ -10,6 +15,18 @@ import type { Room } from "./room/Room";
 import { drawEntity } from "./utils/drawEntity";
 import { processateEntityCollisions } from "./utils/processateEntityCollisions";
 import { processateSpatialEntity } from "./utils/processateSpatialEntity";
+import { wireEmit } from "./utils/wireEmit";
+import { wireOn } from "./utils/wireOn";
+
+function wireEvent<K extends keyof GameEvents>(
+  emit: GameEvents,
+  on: GameEventOn,
+  listeners: GameEventListeners,
+  eventName: K,
+) {
+  wireEmit(emit, eventName, listeners[eventName]);
+  wireOn(on, eventName, listeners[eventName]);
+}
 
 export class Game {
   private config: GameConfig;
@@ -36,10 +53,24 @@ export class Game {
   // Whether the current room's sortedGraphicEntities array should be re-sorted
   private shouldResortGraphicEntities = false;
 
-  constructor(gameConfig: GameConfig, inputConfig: InputConfig) {
+  public readonly emit: GameEvents;
+  public readonly on: GameEventOn;
+
+  constructor(
+    gameConfig: GameConfig,
+    inputConfig: InputConfig,
+    eventListeners: GameEventListeners,
+  ) {
     this.config = gameConfig;
     this.currentRoom = gameConfig.initialRoom;
     this.input = new Input(inputConfig);
+    const gameEmit = new GameEvents();
+    const gameOn = {} as GameEventOn;
+    for (const eventName of Object.keys(gameEmit) as (keyof GameEvents)[]) {
+      wireEvent(gameEmit, gameOn, eventListeners, eventName);
+    }
+    this.emit = gameEmit;
+    this.on = gameOn;
   }
 
   /**
@@ -225,6 +256,7 @@ export class Game {
     this.shouldResortGraphicEntities = true;
   }
 
+  // TODO: let Input be a public Game instance, so these methods can be removed from Game
   public isKeyPressed(key: string) {
     return this.input.keyPressed[key];
   }
@@ -262,6 +294,17 @@ export class Game {
         break;
     }
   }
+  // END TODO
+
+  /**
+   *
+   */
+  // public emit(
+  //   eventName: keyof GameEvents,
+  //   payload: GameEvents[keyof GameEvents],
+  // ) {
+  //   console.log("Game emit: ", eventName, payload);
+  // }
 
   /**
    * Sets up listeners (mouse, keyboard, etc) to the browser's window object and creates the spritesets element.

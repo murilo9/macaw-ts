@@ -4,6 +4,14 @@ import type { GameConfig } from "./core/GameConfig";
 import type { InputConfig } from "./core/input/InputConfig";
 import SpriteSetViewer from "./core/spriteset-viewer/SpriteSetViewer";
 import { WorldRoom } from "./game/rooms/World";
+import {
+  GameEvents,
+  type GameEventChannel,
+  type GameEventListeners,
+} from "./game/GameEvents";
+import { GameEventsProvider } from "./core/GameEventsProvider";
+import GameUI from "./game/ui";
+import GameUiWrapper from "./core/GameUIWrapper";
 
 // Defines whether it'll be displaed the game or a developer tool
 const MODE: "game" | "spriteset_viewer" = "game";
@@ -38,24 +46,46 @@ const inputConfig: InputConfig = {
 };
 
 function App() {
-  // Warning: ref may be problematic  when we want to make reactive changes to the UI
-  const game = useRef<Game>(new Game(gameConfig, inputConfig));
+  const gameEventListeners = useRef<GameEventListeners>({
+    ...Object.entries(new GameEvents()).reduce(
+      (acc, entry) => ({ ...acc, [entry[0]]: [] }),
+      {} as GameEventListeners,
+    ),
+  });
+  const game = useRef<Game>(
+    new Game(gameConfig, inputConfig, gameEventListeners.current),
+  );
+  const events = useRef<GameEventChannel>({
+    emit: game.current.emit,
+    on: game.current.on,
+  });
 
-  const [otherContent, setOtherContent] = useState<ReactNode | null>(null);
+  const [uiLayer, setUiLayer] = useState<ReactNode | null>(null);
 
   // Warning: useLayoutEffect may be more adequate than useEffect
   useEffect(() => {
     switch (MODE) {
       case "game":
+        setUiLayer(
+          <GameEventsProvider value={events.current}>
+            <GameUiWrapper
+              width={`${gameConfig.canvas.width}px`}
+              height={`${gameConfig.canvas.height}px`}
+            >
+              <GameUI />
+            </GameUiWrapper>
+          </GameEventsProvider>,
+        );
         game.current.start();
+        // Calls Game stop method when this component unmounts.
         return game.current.stop;
       case "spriteset_viewer":
-        setOtherContent(<SpriteSetViewer />);
+        setUiLayer(<SpriteSetViewer />);
         break;
     }
   }, []);
 
-  return <>{otherContent}</>;
+  return uiLayer;
 }
 
 export default App;

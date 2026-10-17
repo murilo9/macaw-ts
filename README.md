@@ -32,8 +32,8 @@ Entities can get other entities through the game's getEntity method, passing the
 Entities can implement interfaces to have specific behaviors:
 
 - A **Spatial** entity has a position, velocity and rotation in the room, but is not rendered by itself.
-- A **Graphic** entity is a **Spatial** entity that also has a *sprite* that can be rendered in the room. It has no collision phisics by itself. An **Animation** instance can provide a list of tiles that can be used to render an animation for the Graphic entitiy's sprite over time.
-- A **Collider** entity is a **Graphic** entity that also has a *collision body* that allows it to interact physically with other Collider entities.
+- A **Graphic** entity is a **Spatial** entity that also has a _sprite_ that can be rendered in the room. It has no collision phisics by itself. An **Animation** instance can provide a list of tiles that can be used to render an animation for the Graphic entitiy's sprite over time.
+- A **Collider** entity is a **Graphic** entity that also has a _collision body_ that allows it to interact physically with other Collider entities.
 
 ### How are Graphic entities rendered
 
@@ -68,11 +68,20 @@ Lifecycle:
 3. Entities can call the game's getEntity/appendEntity/removeEntity in order to get/appendremove entities in the room. The game will then call the room's getEntity/appendEntity/removeEntity methods.
 4. On the game's next setCurrentRoom method call, the current room has its beforeEnd method called, which clears the room's loaded spriteSets from the game's spritesetsEl DOM element, then finally calls the room's onEnd method, which can be used to execute any final logic.
 
-### How do entities interact with the UI layer
+## Game Events
 
-_this is a tough one_
+Events have a name and an optional payload. Entities can emit events through the Game's `emit["event:name"]` attribute. Entities can listen to events through the Game's `on["event:name"]` attribute.
+The _GameEvents.ts_ file is where all event names and their respective payloads have to be declared.
 
-### How do entities read data from the Input layer
+It is not recommended to emit events very frequently (like at the logic loop rate) so for sharing values that change very often, use **game values** instead.
+
+### Game UI
+
+UI components can emit events using the `emit` object returned from the `useGameEmit` hook. UI components can listen to events through the `useGameEvent` hook.
+
+You can use tailwind classes to customize UI components.
+
+### Inputs
 
 The game instance has an **Input** instance, and will let a universal keypress event listener update its attributes. Entities then can read data from it. The input instance has an input config (a key map, defined in the constructor) that maps keyboard keys to the inputs (axis, etc). The input has a listener (array of callbacks) that entities can subscribe to (through Game's onKe/onKeuUp/onKeyDown methods) in order to listen to its events.
 _For the mouse, the game will listen to all move and click events, and provide a listener (array of callbacks) that entities can subscribe to. The game will also provide a more specific click listener that graphic entities can listen to in order to know whether the mouse clicked on them._
@@ -97,8 +106,6 @@ The Game config has a debug attribute containing a set of attributes that define
 - `drawSpriteBoxes`: if true, will draw a cyan box for each Graphic entity's tile.
 - `drawPivotCrosses`: if true, will draw a red cross centered on each Graphic entity' pivot.
 
-### Usual Game lifecycle
-
 ### Spriteset Viewer
 
 The Spriteset Viewer (enable in App.tsx MODE variable) allows you to see all the game's Spritesets and their respective tiles.
@@ -108,3 +115,7 @@ The Spriteset Viewer (enable in App.tsx MODE variable) allows you to see all the
 **Why is it fine for an Entity's interface definition to have public attributes?**
 
 Because the entity's interface object itself will be private, so only the entity has access to it.
+
+**Is it fine for an entity to have a reference to the Game instance?**
+
+Yes, as long as you don't try to access it before the onInit method execution, which is where the initial Game reference can come from. Also make sure to type-assert the game instance with "!".

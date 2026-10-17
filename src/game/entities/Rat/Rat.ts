@@ -35,6 +35,8 @@ export class Rat extends Entity implements Collider {
     static: false,
   };
 
+  private game!: Game;
+
   private isEating = false;
 
   private animation = rat0Animations.idle;
@@ -51,9 +53,12 @@ export class Rat extends Entity implements Collider {
     this.isEating = true;
     this.animation = rat0Animations.eating;
     this.animation.reset();
+
+    this.game.emit["dialog:display"]({ text: "Rat is eating cheese!" });
   }
 
   onInit(game: Game) {
+    this.game = game;
     // Setts collison box offset
     this.Collider.body.offset.y = -FEET_TO_BASE * XY_SCALE;
     // Listens to the Input keyUp event in order to eat cheese
