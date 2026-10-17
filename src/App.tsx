@@ -10,6 +10,8 @@ import {
   type GameEventListeners,
 } from "./game/GameEvents";
 import { GameEventsProvider } from "./core/GameEventsProvider";
+import { GameValuesProvider } from "./core/GameValuesProvider";
+import type { GameValuesReader } from "./core/createGameValues";
 import GameUI from "./game/ui";
 import GameUiWrapper from "./core/GameUIWrapper";
 
@@ -55,9 +57,15 @@ function App() {
   const game = useRef<Game>(
     new Game(gameConfig, inputConfig, gameEventListeners.current),
   );
+  // Extracts game events to save them on the ref
   const events = useRef<GameEventChannel>({
     emit: game.current.emit,
     on: game.current.on,
+  });
+  // Extracts game values to save them on the ref
+  const gameValues = useRef<GameValuesReader>({
+    get: game.current.values.get,
+    subscribe: game.current.values.subscribe,
   });
 
   const [uiLayer, setUiLayer] = useState<ReactNode | null>(null);
@@ -68,12 +76,14 @@ function App() {
       case "game":
         setUiLayer(
           <GameEventsProvider value={events.current}>
-            <GameUiWrapper
-              width={`${gameConfig.canvas.width}px`}
-              height={`${gameConfig.canvas.height}px`}
-            >
-              <GameUI />
-            </GameUiWrapper>
+            <GameValuesProvider value={gameValues.current}>
+              <GameUiWrapper
+                width={`${gameConfig.canvas.width}px`}
+                height={`${gameConfig.canvas.height}px`}
+              >
+                <GameUI />
+              </GameUiWrapper>
+            </GameValuesProvider>
           </GameEventsProvider>,
         );
         game.current.start();

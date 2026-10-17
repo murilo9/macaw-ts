@@ -98,5 +98,9 @@ export class Rat extends Entity implements Collider {
       this.animation = rat0Animations.idle;
       this.isEating = false;
     }
+    this.game.values.set("rat:position", {
+      x: this.Spatial.position.x,
+      y: this.Spatial.position.y,
+    });
   }
 }

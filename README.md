@@ -75,6 +75,14 @@ The _GameEvents.ts_ file is where all event names and their respective payloads 
 
 It is not recommended to emit events very frequently (like at the logic loop rate) so for sharing values that change very often, use **game values** instead.
 
+### Game values
+
+A game value is the latest snapshot of a named key. Declare each key and its initial value in _GameValues.ts_.
+
+Entities read a value with `game.values.get("key")` and replace it with `game.values.set("key", value)`. Pass a new object or primitive on each update. The stored snapshot is frozen, so mutating the object returned by `get` does not publish a change.
+
+UI components read a value with the `useGameValue` hook and cannot write. Call that hook from the component that renders the value, so a key that changes every logic tick does not re-render the rest of the tree.
+
 ### Game UI
 
 UI components can emit events using the `emit` object returned from the `useGameEmit` hook. UI components can listen to events through the `useGameEvent` hook.

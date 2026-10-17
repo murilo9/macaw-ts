@@ -3,6 +3,8 @@ import {
   type GameEventListeners,
   type GameEventOn,
 } from "../game/GameEvents";
+import { GameValues } from "../game/GameValues";
+import { createGameValues, type GameValuesStore } from "./createGameValues";
 import type { Entity } from "./entity/Entity";
 import type { Collider } from "./entity/interfaces/Collider";
 import type { Graphic } from "./entity/interfaces/Graphic";
@@ -55,6 +57,7 @@ export class Game {
 
   public readonly emit: GameEvents;
   public readonly on: GameEventOn;
+  public readonly values: GameValuesStore;
 
   constructor(
     gameConfig: GameConfig,
@@ -71,6 +74,7 @@ export class Game {
     }
     this.emit = gameEmit;
     this.on = gameOn;
+    this.values = createGameValues(new GameValues());
   }
 
   /**
