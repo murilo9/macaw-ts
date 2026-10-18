@@ -27,8 +27,8 @@ const gameConfig: GameConfig = {
   },
   debug: {
     drawCollisionBoxes: false,
-    drawSpriteBoxes: true,
-    drawPivotCrosses: true,
+    drawSpriteBoxes: false,
+    drawPivotCrosses: false,
   },
 };
 

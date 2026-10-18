@@ -97,7 +97,7 @@ export class Game {
     this.isRunning = true;
 
     // Initializes the initial (current) room
-    this.currentRoom.beforeInit(this, this.spritesetsEl!);
+    this.currentRoom._beforeInit(this, this.spritesetsEl!);
 
     this.lastLogicExecution = performance.now();
     // Starts the render loop at browser screen refresh rate
@@ -221,11 +221,11 @@ export class Game {
       );
     }
     // Clears the current (soon-to-be-previous) room
-    this.currentRoom.beforeEnd(this, this.spritesetsEl);
+    this.currentRoom._beforeEnd(this, this.spritesetsEl);
     // Sets the new room
     this.currentRoom = room;
     // Initializes the initial (current) room
-    this.currentRoom.beforeInit(this, this.spritesetsEl);
+    this.currentRoom._beforeInit(this, this.spritesetsEl);
   }
 
   /**
@@ -233,7 +233,17 @@ export class Game {
    * @param entity
    */
   public appendEntity(entity: Entity) {
-    this.currentRoom.appendEntity(entity, this);
+    this.currentRoom._appendEntity(entity, this);
+  }
+
+  /**
+   * Appends a lis of entities in the current room
+   * @param entity
+   */
+  public appendEntities(entities: Entity[]) {
+    for (const entity of entities) {
+      this.currentRoom._appendEntity(entity, this);
+    }
   }
 
   /**
@@ -242,7 +252,7 @@ export class Game {
    * @returns
    */
   public getEntity(_id: string) {
-    return this.currentRoom.getEntity(_id);
+    return this.currentRoom._getEntity(_id);
   }
 
   /**
@@ -250,7 +260,7 @@ export class Game {
    * @param _id
    */
   public removeEntity(_id: string) {
-    this.currentRoom.removeEntity(_id);
+    this.currentRoom._removeEntity(_id);
   }
 
   /**

@@ -9,16 +9,13 @@ export class Room {
   entities: Array<Entity>;
   spriteSets: Record<string, SpriteSet>;
   // Entities sorted by Graphic depth
-  sortedGraphicEntities: Array<Graphic>;
+  sortedGraphicEntities: Array<Entity & Graphic>;
   colliderEntities: Array<Entity & Collider>;
   private collisionSystem: System;
 
-  constructor(
-    initialEntities: Array<Entity> = [],
-    initialSpriteSets: Record<string, SpriteSet>
-  ) {
-    this.entities = initialEntities;
+  constructor(initialSpriteSets: Record<string, SpriteSet>) {
     this.spriteSets = initialSpriteSets;
+    this.entities = [];
     this.sortedGraphicEntities = [];
     this.colliderEntities = [];
     this.collisionSystem = new System();
@@ -31,24 +28,25 @@ export class Room {
    * @param game
    * @param spritesetsEl
    */
-  public readonly beforeInit = (game: Game, spritesetsEl: HTMLDivElement) => {
+  public readonly _beforeInit = (game: Game, spritesetsEl: HTMLDivElement) => {
     // Appends this room's spritesets' img elements to the game's spritesetsEl DOM element.
     Object.values(this.spriteSets).forEach((spriteSet) => {
       spritesetsEl.append(spriteSet.img);
     });
-    // Appends all initial entities
-    this.entities.forEach((entity) => {
-      this.appendEntity(entity, game);
-    });
-    // Builds the sortedGraphicEntities array
-    this.sortedGraphicEntities = this.entities.filter((entity) =>
-      entity._is("Graphic")
-    ) as unknown as Array<Graphic>;
-    this.sortedGraphicEntities.sort(
-      (entityA, entityB) => entityA.Graphic.depth - entityB.Graphic.depth
-    );
     // Calls room's onInit method
-    this.onInit();
+    this.onInit(game);
+  };
+
+  /**
+   * Sorts the Graphic entities list based on their depth value.
+   */
+  private readonly _sortGraphicEntities = () => {
+    this.sortedGraphicEntities = this.entities.filter((entity) =>
+      entity._is("Graphic"),
+    ) as Array<Graphic & Entity>;
+    this.sortedGraphicEntities.sort(
+      (entityA, entityB) => entityA.Graphic.depth - entityB.Graphic.depth,
+    );
   };
 
   /**
@@ -56,7 +54,7 @@ export class Room {
    * @param _id
    * @returns
    */
-  public readonly getEntity = (_id: string) => {
+  public readonly _getEntity = (_id: string) => {
     return this.entities.find((entity) => entity._id === _id);
   };
 
@@ -65,9 +63,10 @@ export class Room {
    * @param entity
    * @param game
    */
-  public readonly appendEntity = (entity: Entity, game: Game) => {
+  public readonly _appendEntity = (entity: Entity, game: Game) => {
     this.entities.push(entity);
     entity.onInit(game);
+    this._sortGraphicEntities();
     // If entity is Collider
     if (entity._is("Collider")) {
       // Sets isStatic attribue
@@ -78,34 +77,43 @@ export class Room {
       this.colliderEntities.push(entity as unknown as Entity & Collider);
       // Inserts its body in the room's collision system
       this.collisionSystem.insert(
-        (entity as unknown as Collider).Collider.body
+        (entity as unknown as Collider).Collider.body,
       );
     }
   };
 
   /**
-   * Called by Game only. Removes an entity.
+   * Called by Game only. Removes an entity from every list:
+   * entities, sortedGraphicEntities and colliderEntities.
    * @param entityOrId
    */
-  public readonly removeEntity = (_id: Entity | string) => {
+  public readonly _removeEntity = (_id: Entity | string) => {
     const entityIndex = this.entities.findIndex((entity) => entity._id === _id);
     if (entityIndex >= 0) {
-      this.entities.splice(entityIndex, 1);
-
-      // If entity is Collider
-      if (this.entities[entityIndex]._is("Collider")) {
-        // Removes it from the collierEntities array
-        const colliderEntitiesIndex = this.colliderEntities.findIndex(
-          (entity) => entity._id === _id
-        );
-        if (colliderEntitiesIndex >= 0) {
-          this.colliderEntities.splice(colliderEntitiesIndex, 1);
+      // If entitty if Graphic, removes it from the sortedGraphicEntities array
+      if (this.entities[entityIndex]._is("Graphic")) {
+        // If entity is Collider, Removes it from the collierEntities array
+        if (this.entities[entityIndex]._is("Collider")) {
+          const colliderEntitiesIndex = this.colliderEntities.findIndex(
+            (entity) => entity._id === _id,
+          );
+          if (colliderEntitiesIndex >= 0) {
+            this.colliderEntities.splice(colliderEntitiesIndex, 1);
+          }
+          // Removes its body from the room's collision system
+          this.collisionSystem.remove(
+            (this.entities[entityIndex] as unknown as Collider).Collider.body,
+          );
         }
-        // Removes its body from the room's collision system
-        this.collisionSystem.remove(
-          (this.entities[entityIndex] as unknown as Collider).Collider.body
+        const sortedGraphicEntityIndex = this.sortedGraphicEntities.findIndex(
+          (entity) => (entity as Entity & Graphic)._id === _id,
         );
+        if (sortedGraphicEntityIndex >= 0) {
+          this.sortedGraphicEntities.splice(sortedGraphicEntityIndex, 1);
+        }
       }
+      // Finally, removes the entity from the entities list
+      this.entities.splice(entityIndex, 1);
     }
   };
 
@@ -114,10 +122,10 @@ export class Room {
    * @param game
    * @param spritesetsEl
    */
-  public readonly beforeEnd = (game: Game, spritesetsEl: HTMLDivElement) => {
+  public readonly _beforeEnd = (game: Game, spritesetsEl: HTMLDivElement) => {
     const loadedSpritesets = spritesetsEl.childNodes;
     loadedSpritesets.forEach((loadedSpriteset) =>
-      spritesetsEl.removeChild(loadedSpriteset)
+      spritesetsEl.removeChild(loadedSpriteset),
     );
     // Calls room's onEnd method
     this.onEnd(game);
@@ -149,7 +157,7 @@ export class Room {
   /**
    * Executed when this room becomes the current room, through Game's setCurrentRoom method.
    */
-  public onInit() {}
+  public onInit(game: Game) {}
 
   /**
    * Executed when this room stops being the current room, when a new room is passed to Game's setCurrentRoom method.

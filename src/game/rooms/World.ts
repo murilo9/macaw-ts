@@ -2,9 +2,14 @@ import { Room } from "../../core/room/Room";
 import { Rat } from "../entities/Rat/Rat";
 import { spriteSets } from "../spritesets";
 import { TableSmallSquared } from "../entities/Table";
+import type { Game } from "../../core/Game";
 
 export class WorldRoom extends Room {
   constructor() {
-    super([new TableSmallSquared(), new Rat()], spriteSets);
+    super(spriteSets);
+  }
+
+  onInit(game: Game) {
+    game.appendEntities([new TableSmallSquared(), new Rat()]);
   }
 }
