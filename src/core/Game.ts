@@ -183,7 +183,7 @@ export class Game {
         Graphic;
       // Short-circuits if entity.shouldRender is false
       if (!this.entityToDraw.Graphic.shouldRender) {
-        break;
+        continue;
       }
       // Calls entity's onRender method
       this.entityToDraw.onRender(this, delta);
