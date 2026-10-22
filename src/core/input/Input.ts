@@ -1,3 +1,4 @@
+import type { Entity } from "../entity/Entity";
 import type { Graphic } from "../entity/interfaces/Graphic";
 import type { InputAxis } from "./InputAxis";
 import type { InputConfig } from "./InputConfig";
@@ -21,16 +22,25 @@ export class Input {
     position: PointerPosition;
     button: PointerButton;
   };
-  private keyDownListeners: Array<(key: string) => void>;
-  private keyUpListeners: Array<(key: string) => void>;
-  private keyListeners: Array<(key: string, type: "up" | "down") => void>;
-  private axis1Listeners: Array<(axis: InputAxis) => void>;
-  private axis2Listeners: Array<(axis: InputAxis) => void>;
-  private pointerPressListeners: Array<(buttons: PointerButton) => void>;
-  private pointerReleaseListeners: Array<(buttons: PointerButton) => void>;
+  private keyDownListeners: { [entityId: string]: (key: string) => void };
+  private keyUpListeners: { [entityId: string]: (key: string) => void };
+  private keyListeners: {
+    [entityId: string]: (key: string, type: "up" | "down") => void;
+  };
+  private axis1Listeners: { [entityId: string]: (axis: InputAxis) => void };
+  private axis2Listeners: { [entityId: string]: (axis: InputAxis) => void };
+  private pointerPressListeners: {
+    [entityId: string]: (buttons: PointerButton) => void;
+  };
+  private pointerReleaseListeners: {
+    [entityId: string]: (buttons: PointerButton) => void;
+  };
   private pointerMoveListeners: {
-    move: Array<(position: PointerPosition) => void>;
-    over: Array<{ entity: Graphic; callback: (isOver: boolean) => void }>;
+    move: { [entityId: string]: (position: PointerPosition) => void };
+    over: Array<{
+      entity: Entity & Graphic;
+      callback: (isOver: boolean) => void;
+    }>;
   };
   private boundHandlePointerUp!: (event: PointerEvent) => void;
   private boundHandlePointerDown!: (event: PointerEvent) => void;
@@ -74,14 +84,14 @@ export class Input {
         y: 0,
       },
     };
-    this.keyDownListeners = [];
-    this.keyUpListeners = [];
-    this.keyListeners = [];
-    this.axis1Listeners = [];
-    this.axis2Listeners = [];
-    this.pointerPressListeners = [];
-    this.pointerReleaseListeners = [];
-    this.pointerMoveListeners = { move: [], over: [] };
+    this.keyDownListeners = {};
+    this.keyUpListeners = {};
+    this.keyListeners = {};
+    this.axis1Listeners = {};
+    this.axis2Listeners = {};
+    this.pointerPressListeners = {};
+    this.pointerReleaseListeners = {};
+    this.pointerMoveListeners = { move: {}, over: [] };
   }
 
   private technicalSetup() {
@@ -211,11 +221,11 @@ export class Input {
     // Updates the axes
     this.updateAxes(event.code, "press");
     // Calls all key listeners
-    for (const callback of this.keyListeners) {
+    for (const callback of Object.values(this.keyListeners)) {
       callback(event.code, "down");
     }
     // Calls all key down listeners
-    for (const callback of this.keyDownListeners) {
+    for (const callback of Object.values(this.keyDownListeners)) {
       callback(event.code);
     }
   }
@@ -230,11 +240,11 @@ export class Input {
     // Updates the axes
     this.updateAxes(event.code, "release");
     // Calls all key listeners
-    for (const callback of this.keyListeners) {
+    for (const callback of Object.values(this.keyListeners)) {
       callback(event.code, "up");
     }
     // Calls all key up listeners
-    for (const callback of this.keyUpListeners) {
+    for (const callback of Object.values(this.keyUpListeners)) {
       callback(event.code);
     }
   }
@@ -261,11 +271,32 @@ export class Input {
           : this.axis2[direction];
     }
     // Calls axes' event listeners
-    for (const callback of this.axis1Listeners) {
+    for (const callback of Object.values(this.axis1Listeners)) {
       callback(this.axis1);
     }
-    for (const callback of this.axis2Listeners) {
+    for (const callback of Object.values(this.axis2Listeners)) {
       callback(this.axis2);
+    }
+  }
+
+  /**
+   * Removes the listeners from an entity that has been removed from the room.
+   * @param entity
+   */
+  public _cleanupListeners(entity: Entity) {
+    delete this.keyListeners[entity._id];
+    delete this.keyDownListeners[entity._id];
+    delete this.keyUpListeners[entity._id];
+    delete this.axis1Listeners[entity._id];
+    delete this.axis2Listeners[entity._id];
+    delete this.pointerPressListeners[entity._id];
+    delete this.pointerReleaseListeners[entity._id];
+    delete this.pointerMoveListeners.move[entity._id];
+    const pointerOverListenerIndex = this.pointerMoveListeners.over.findIndex(
+      ({ entity: e }) => e._id === entity._id,
+    );
+    if (pointerOverListenerIndex >= 0) {
+      this.pointerMoveListeners.over.splice(pointerOverListenerIndex, 1);
     }
   }
 
@@ -281,40 +312,40 @@ export class Input {
    * Subscriber for key up events
    * @param callback The entity's function to be called
    */
-  public onKeyUp(callback: (key: string) => void) {
-    this.keyUpListeners.push(callback);
+  public onKeyUp(callback: (key: string) => void, entity: Entity) {
+    this.keyUpListeners[entity._id] = callback;
   }
 
   /**
    * Subscriber for key down events
    * @param callback The entity's function to be called
    */
-  public onKeyDown(callback: (key: string) => void) {
-    this.keyDownListeners.push(callback);
+  public onKeyDown(callback: (key: string) => void, entity: Entity) {
+    this.keyDownListeners[entity._id] = callback;
   }
 
   /**
    * Subscriber for any key events
    * @param callback The entity's function to be called
    */
-  public onKey(callback: (key: string) => void) {
-    this.keyListeners.push(callback);
+  public onKey(callback: (key: string) => void, entity: Entity) {
+    this.keyListeners[entity._id] = callback;
   }
 
   /**
    * Subscriber for axis1 events
    * @param callback
    */
-  public onAxis1Change(callback: (axis: InputAxis) => void) {
-    this.axis1Listeners.push(callback);
+  public onAxis1Change(callback: (axis: InputAxis) => void, entity: Entity) {
+    this.axis1Listeners[entity._id] = callback;
   }
 
   /**
    * Subscriber for axis2 events
    * @param callback
    */
-  public onAxis2Change(callback: (axis: InputAxis) => void) {
-    this.axis2Listeners.push(callback);
+  public onAxis2Change(callback: (axis: InputAxis) => void, entity: Entity) {
+    this.axis2Listeners[entity._id] = callback;
   }
 
   /**
@@ -324,9 +355,9 @@ export class Input {
    */
   public onPointerPress(
     callback: (buttons: PointerButton) => void,
-    entity?: Graphic,
+    entity: Entity,
   ) {
-    this.pointerPressListeners.push(callback);
+    this.pointerPressListeners[entity._id] = callback;
   }
 
   /**
@@ -336,9 +367,9 @@ export class Input {
    */
   public onPointerRelease(
     callback: (buttons: PointerButton) => void,
-    entity?: Graphic,
+    entity: Entity,
   ) {
-    this.pointerReleaseListeners.push(callback);
+    this.pointerReleaseListeners[entity._id] = callback;
   }
 
   /**
@@ -346,11 +377,17 @@ export class Input {
    * @param callback
    * @param entity
    */
-  public onPointerMove(callback: (position: PointerPosition) => void) {
-    this.pointerMoveListeners.move.push(callback);
+  public onPointerMove(
+    callback: (position: PointerPosition) => void,
+    entity: Entity,
+  ) {
+    this.pointerMoveListeners.move[entity._id] = callback;
   }
 
-  public onPointerOver(entity: Graphic, callback: (isOver: boolean) => void) {
+  public onPointerOver(
+    entity: Entity & Graphic,
+    callback: (isOver: boolean) => void,
+  ) {
     this.pointerMoveListeners.over.push({ entity, callback });
   }
 }

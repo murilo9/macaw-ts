@@ -66,21 +66,25 @@ export class Rat extends Entity implements Collider {
       if (key === "Space") {
         this.eatCheese();
       }
-    });
+    }, this);
     // Listens to the game axis1 in order to move
-    game.onAxisChange("axis1", (axis) => {
-      this.Spatial.velocity.setXY(
-        (-axis.left + axis.right) * SPEED,
-        (-axis.up + axis.down) * SPEED,
-      );
-      this.animation =
-        Boolean(-axis.left + axis.right) || Boolean(-axis.up + axis.down)
-          ? rat0Animations.walking
-          : rat0Animations.idle;
-    });
-    game.onPointerOver(this, (isOver: boolean) => {
+    game.onAxisChange(
+      "axis1",
+      (axis) => {
+        this.Spatial.velocity.setXY(
+          (-axis.left + axis.right) * SPEED,
+          (-axis.up + axis.down) * SPEED,
+        );
+        this.animation =
+          Boolean(-axis.left + axis.right) || Boolean(-axis.up + axis.down)
+            ? rat0Animations.walking
+            : rat0Animations.idle;
+      },
+      this,
+    );
+    game.onPointerOver((isOver: boolean) => {
       if (isOver) console.log("Mouse is over Rat");
-    });
+    }, this);
   }
 
   onRender(game: Game, dt: number): void {

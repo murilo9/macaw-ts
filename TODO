@@ -1,9 +1,10 @@
 ONGOING
 
-- UI layer
+- Let Room and Input as Game APIs
 
 TODO
 
+- Bug: ending a room still leaves the entities in place
 - Multi-game support (multiple folders for games)
 - Add a offset attribute to Collider interface so it reflects automatically to the collision body actual offset (no need to manually set offset in the constructor anymore)
 - Prevent handling collisions of static collider entities

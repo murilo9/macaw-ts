@@ -251,7 +251,7 @@ export class Game {
    * @param _id Entity's id
    * @returns
    */
-  public getEntity(_id: string) {
+  public getEntityById(_id: string) {
     return this.currentRoom._getEntity(_id);
   }
 
@@ -259,8 +259,9 @@ export class Game {
    * Removes an entity from the current room
    * @param _id
    */
-  public removeEntity(_id: string) {
-    this.currentRoom._removeEntity(_id);
+  public removeEntity(entity: Entity) {
+    this.input._cleanupListeners(entity);
+    this.currentRoom._removeEntity(entity);
   }
 
   /**
@@ -275,36 +276,43 @@ export class Game {
     return this.input.keyPressed[key];
   }
 
-  public onKey(callback: (key: string) => void) {
-    this.input.onKey(callback);
+  public onKey(callback: (key: string) => void, entity: Entity) {
+    this.input.onKey(callback, entity);
   }
 
-  public onKeyUp(callback: (key: string) => void) {
-    this.input.onKeyUp(callback);
+  public onKeyUp(callback: (key: string) => void, entity: Entity) {
+    this.input.onKeyUp(callback, entity);
   }
 
-  public onKeyDown(callback: (key: string) => void) {
-    this.input.onKeyDown(callback);
+  public onKeyDown(callback: (key: string) => void, entity: Entity) {
+    this.input.onKeyDown(callback, entity);
   }
 
-  public onPointerMove(callback: (position: PointerPosition) => void) {
-    this.input.onPointerMove(callback);
+  public onPointerMove(
+    callback: (position: PointerPosition) => void,
+    entity: Entity,
+  ) {
+    this.input.onPointerMove(callback, entity);
   }
 
-  public onPointerOver(entity: Graphic, callback: (isOver: boolean) => void) {
+  public onPointerOver(
+    callback: (isOver: boolean) => void,
+    entity: Entity & Graphic,
+  ) {
     this.input.onPointerOver(entity, callback);
   }
 
   public onAxisChange(
     axis: "axis1" | "axis2",
     callback: (axis: InputAxis) => void,
+    entity: Entity,
   ) {
     switch (axis) {
       case "axis1":
-        this.input.onAxis1Change(callback);
+        this.input.onAxis1Change(callback, entity);
         break;
       case "axis2":
-        this.input.onAxis2Change(callback);
+        this.input.onAxis2Change(callback, entity);
         break;
     }
   }

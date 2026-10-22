@@ -87,26 +87,26 @@ export class Room {
    * entities, sortedGraphicEntities and colliderEntities.
    * @param entityOrId
    */
-  public readonly _removeEntity = (_id: Entity | string) => {
-    const entityIndex = this.entities.findIndex((entity) => entity._id === _id);
+  public readonly _removeEntity = (entity: Entity) => {
+    const entityIndex = this.entities.findIndex((e) => entity._id === e._id);
     if (entityIndex >= 0) {
       // If entitty if Graphic, removes it from the sortedGraphicEntities array
-      if (this.entities[entityIndex]._is("Graphic")) {
+      if (entity._is("Graphic")) {
         // If entity is Collider, Removes it from the collierEntities array
-        if (this.entities[entityIndex]._is("Collider")) {
+        if (entity._is("Collider")) {
           const colliderEntitiesIndex = this.colliderEntities.findIndex(
-            (entity) => entity._id === _id,
+            (e) => entity._id === e._id,
           );
           if (colliderEntitiesIndex >= 0) {
             this.colliderEntities.splice(colliderEntitiesIndex, 1);
           }
           // Removes its body from the room's collision system
           this.collisionSystem.remove(
-            (this.entities[entityIndex] as unknown as Collider).Collider.body,
+            (entity as Entity & Collider).Collider.body,
           );
         }
         const sortedGraphicEntityIndex = this.sortedGraphicEntities.findIndex(
-          (entity) => (entity as Entity & Graphic)._id === _id,
+          (e) => (e as Entity & Graphic)._id === e._id,
         );
         if (sortedGraphicEntityIndex >= 0) {
           this.sortedGraphicEntities.splice(sortedGraphicEntityIndex, 1);
@@ -123,10 +123,15 @@ export class Room {
    * @param spritesetsEl
    */
   public readonly _beforeEnd = (game: Game, spritesetsEl: HTMLDivElement) => {
+    // Remove the loaded spritesets
     const loadedSpritesets = spritesetsEl.childNodes;
     loadedSpritesets.forEach((loadedSpriteset) =>
       spritesetsEl.removeChild(loadedSpriteset),
     );
+    // Remove all entities from the room
+    for (const entity of this.entities) {
+      this._removeEntity(entity);
+    }
     // Calls room's onEnd method
     this.onEnd(game);
   };
