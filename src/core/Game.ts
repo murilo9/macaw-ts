@@ -10,8 +10,7 @@ import type { Collider } from "./entity/interfaces/Collider";
 import type { Graphic } from "./entity/interfaces/Graphic";
 import type { Spatial } from "./entity/interfaces/Spatial";
 import type { GameConfig } from "./GameConfig";
-import { Input, type PointerPosition } from "./input/Input";
-import type { InputAxis } from "./input/InputAxis";
+import { Input } from "./input/Input";
 import type { InputConfig } from "./input/InputConfig";
 import type { Room } from "./room/Room";
 import { drawEntity } from "./utils/drawEntity";
@@ -30,10 +29,15 @@ function wireEvent<K extends keyof GameEvents>(
   wireOn(on, eventName, listeners[eventName]);
 }
 
+/**
+ * The game instance.
+ * This class should never be entended.
+ */
 export class Game {
   private config: GameConfig;
   private input: Input;
-  private canvasEl: HTMLCanvasElement | undefined;
+  // Holds all entities that'll be processes by the logic loop
+  private currentRoom: Room;
   // Canvas draw context
   private ctx: CanvasRenderingContext2D | undefined;
   // The graphic entity currently being drawn
@@ -44,8 +48,6 @@ export class Game {
   private entityToExecuteCollision: (Entity & Collider) | null = null;
   // Holds the img elements of the loaded spriteSets for the current room
   private spritesetsEl: HTMLDivElement | undefined;
-  // Holds all entities that'll be processes by the logic loop
-  private currentRoom: Room;
   // Keeps the logic and render loops running while = true
   private isRunning = false;
   // Used to limit the amount of logic loop executions per second
@@ -77,40 +79,7 @@ export class Game {
     this.values = createGameValues(new GameValues());
   }
 
-  /**
-   * Starts the game. Called by the React app.
-   * @returns
-   */
-  public async start() {
-    // Prevents re-execution if game is already running
-    if (this.isRunning) return;
-
-    this.technicalSetup();
-
-    await Promise.all(
-      Array.from(document.images).map(
-        (image) =>
-          new Promise((resolve) => image.addEventListener("load", resolve)),
-      ),
-    );
-
-    this.isRunning = true;
-
-    // Initializes the initial (current) room
-    this.currentRoom._beforeInit(this, this.spritesetsEl!);
-
-    this.lastLogicExecution = performance.now();
-    // Starts the render loop at browser screen refresh rate
-    requestAnimationFrame(this.renderLoop.bind(this));
-  }
-
-  /**
-   * Stops the game. Called by anyone.
-   */
-  public stop() {
-    this.isRunning = false;
-    this.input.technicalCleanup();
-  }
+  //------------------------------ PRIVATE INTERFACE ------------------------------
 
   /** Main loop (drives both render + conditional logic updates) */
   private renderLoop(now: number) {
@@ -205,10 +174,80 @@ export class Game {
   }
 
   /**
-   * Gets the current room.
+   * Sets up listeners (mouse, keyboard, etc) to the browser's window object and creates the spritesets element.
    */
-  public getCurrentRoom(): Room {
+  private technicalSetup() {
+    // Setup game canvas
+    const { background, height, width } = this.config.canvas;
+    const canvasEl = document.createElement("canvas");
+    canvasEl.id = "game-canvas";
+    canvasEl.width = width;
+    canvasEl.height = height;
+    canvasEl.style.background = background;
+    const reactRootEl = document.getElementById("root");
+    if (!reactRootEl) {
+      throw new Error("Could not get React root");
+    }
+    reactRootEl.appendChild(canvasEl);
+    this.ctx = canvasEl.getContext("2d")!;
+    this.ctx.imageSmoothingEnabled = false;
+    // Creates spritesets container
+    const spritesetsEl = document.createElement("div");
+    spritesetsEl.id = "game-spritesets";
+    spritesetsEl.style.display = "none";
+    document.body.appendChild(spritesetsEl);
+    this.spritesetsEl = spritesetsEl;
+  }
+
+  // ------------------------------ PUBLIC INTERFACE ------------------------------
+
+  /**
+   * Starts the game. Called by the React app.
+   * @returns
+   */
+  public async start() {
+    // Prevents re-execution if game is already running
+    if (this.isRunning) return;
+
+    this.technicalSetup();
+
+    await Promise.all(
+      Array.from(document.images).map(
+        (image) =>
+          new Promise((resolve) => image.addEventListener("load", resolve)),
+      ),
+    );
+
+    this.isRunning = true;
+
+    // Initializes the initial (current) room
+    this.currentRoom._beforeInit(this, this.spritesetsEl!);
+
+    this.lastLogicExecution = performance.now();
+    // Starts the render loop at browser screen refresh rate
+    requestAnimationFrame(this.renderLoop.bind(this));
+  }
+
+  /**
+   * Stops the game. Called by anyone.
+   */
+  public stop() {
+    this.isRunning = false;
+    this.input.technicalCleanup();
+  }
+
+  /**
+   * Facade getter for the current room.
+   */
+  public Room(): Room {
     return this.currentRoom;
+  }
+
+  /**
+   * Facade getter for the input instance.
+   */
+  public Input(): Input {
+    return this.input;
   }
 
   /**
@@ -229,94 +268,11 @@ export class Game {
   }
 
   /**
-   * Appends an entity in the current room
-   * @param entity
-   */
-  public appendEntity(entity: Entity) {
-    this.currentRoom._appendEntity(entity, this);
-  }
-
-  /**
-   * Appends a lis of entities in the current room
-   * @param entity
-   */
-  public appendEntities(entities: Entity[]) {
-    for (const entity of entities) {
-      this.currentRoom._appendEntity(entity, this);
-    }
-  }
-
-  /**
-   * Retrieves an entity from the current room
-   * @param _id Entity's id
-   * @returns
-   */
-  public getEntityById(_id: string) {
-    return this.currentRoom._getEntity(_id);
-  }
-
-  /**
-   * Removes an entity from the current room
-   * @param _id
-   */
-  public removeEntity(entity: Entity) {
-    this.input._cleanupListeners(entity);
-    this.currentRoom._removeEntity(entity);
-  }
-
-  /**
    * Tells the game to re-sort current room's sortedGraphicEntities array on the next render loop execution
    */
   public onDepthUpdated() {
     this.shouldResortGraphicEntities = true;
   }
-
-  // TODO: let Input be a public Game instance, so these methods can be removed from Game
-  public isKeyPressed(key: string) {
-    return this.input.keyPressed[key];
-  }
-
-  public onKey(callback: (key: string) => void, entity: Entity) {
-    this.input.onKey(callback, entity);
-  }
-
-  public onKeyUp(callback: (key: string) => void, entity: Entity) {
-    this.input.onKeyUp(callback, entity);
-  }
-
-  public onKeyDown(callback: (key: string) => void, entity: Entity) {
-    this.input.onKeyDown(callback, entity);
-  }
-
-  public onPointerMove(
-    callback: (position: PointerPosition) => void,
-    entity: Entity,
-  ) {
-    this.input.onPointerMove(callback, entity);
-  }
-
-  public onPointerOver(
-    callback: (isOver: boolean) => void,
-    entity: Entity & Graphic,
-  ) {
-    this.input.onPointerOver(entity, callback);
-  }
-
-  public onAxisChange(
-    axis: "axis1" | "axis2",
-    callback: (axis: InputAxis) => void,
-    entity: Entity,
-  ) {
-    switch (axis) {
-      case "axis1":
-        this.input.onAxis1Change(callback, entity);
-        break;
-      case "axis2":
-        this.input.onAxis2Change(callback, entity);
-        break;
-    }
-  }
-  // END TODO
 
   /**
    *
@@ -327,31 +283,4 @@ export class Game {
   // ) {
   //   console.log("Game emit: ", eventName, payload);
   // }
-
-  /**
-   * Sets up listeners (mouse, keyboard, etc) to the browser's window object and creates the spritesets element.
-   */
-  private technicalSetup() {
-    // Setup game canvas
-    const { background, height, width } = this.config.canvas;
-    const canvasEl = document.createElement("canvas");
-    canvasEl.id = "game-canvas";
-    canvasEl.width = width;
-    canvasEl.height = height;
-    canvasEl.style.background = background;
-    const reactRootEl = document.getElementById("root");
-    if (!reactRootEl) {
-      throw new Error("Could not get React root");
-    }
-    reactRootEl.appendChild(canvasEl);
-    this.canvasEl = canvasEl;
-    this.ctx = canvasEl.getContext("2d")!;
-    this.ctx.imageSmoothingEnabled = false;
-    // Creates spritesets container
-    const spritesetsEl = document.createElement("div");
-    spritesetsEl.id = "game-spritesets";
-    spritesetsEl.style.display = "none";
-    document.body.appendChild(spritesetsEl);
-    this.spritesetsEl = spritesetsEl;
-  }
 }

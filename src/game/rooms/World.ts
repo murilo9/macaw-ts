@@ -10,6 +10,6 @@ export class WorldRoom extends Room {
   }
 
   onInit(game: Game) {
-    game.appendEntities([new TableSmallSquared(), new Rat()]);
+    game.Room().appendEntities([new TableSmallSquared(), new Rat()]);
   }
 }

@@ -14,6 +14,10 @@ export type PointerButton = {
   middle: boolean;
 };
 
+/**
+ * The game inputs manager.
+ * This class should never be entended.
+ */
 export class Input {
   private config: InputConfig;
   private axis1: InputAxis;
@@ -94,6 +98,8 @@ export class Input {
     this.pointerMoveListeners = { move: {}, over: [] };
   }
 
+  // ------------------------------ PRIVATE INTERFACE ------------------------------
+
   private technicalSetup() {
     // Bind event handlers to preserve 'this' context
     this.boundHandlePointerUp = this.handlePointerUp.bind(this);
@@ -113,16 +119,6 @@ export class Input {
     window.addEventListener("pointermove", this.boundHandlePointerMove);
     window.addEventListener("keydown", this.boundHandleKeyDownEvent);
     window.addEventListener("keyup", this.boundHandleKeyUpEvent);
-  }
-
-  /**
-   * Cleans up listeners (pointer, keyboard) to the browser's window object.
-   */
-  technicalCleanup() {
-    window.removeEventListener("pointerup", this.boundHandlePointerUp);
-    window.removeEventListener("pointerdown", this.boundHandlePointerDown);
-    window.removeEventListener("keydown", this.boundHandleKeyDownEvent);
-    window.removeEventListener("keyup", this.boundHandleKeyUpEvent);
   }
 
   /**
@@ -277,6 +273,18 @@ export class Input {
     for (const callback of Object.values(this.axis2Listeners)) {
       callback(this.axis2);
     }
+  }
+
+  // ------------------------------ PUBLIC INTERFACE ------------------------------
+
+  /**
+   * Cleans up listeners (pointer, keyboard) to the browser's window object.
+   */
+  technicalCleanup() {
+    window.removeEventListener("pointerup", this.boundHandlePointerUp);
+    window.removeEventListener("pointerdown", this.boundHandlePointerDown);
+    window.removeEventListener("keydown", this.boundHandleKeyDownEvent);
+    window.removeEventListener("keyup", this.boundHandleKeyUpEvent);
   }
 
   /**

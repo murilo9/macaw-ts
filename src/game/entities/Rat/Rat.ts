@@ -62,29 +62,25 @@ export class Rat extends Entity implements Collider {
     // Setts collison box offset
     this.Collider.body.offset.y = -FEET_TO_BASE * XY_SCALE;
     // Listens to the Input keyUp event in order to eat cheese
-    game.onKeyUp((key) => {
+    game.Input().onKeyUp((key) => {
       if (key === "Space") {
         this.eatCheese();
       }
     }, this);
     // Listens to the game axis1 in order to move
-    game.onAxisChange(
-      "axis1",
-      (axis) => {
-        this.Spatial.velocity.setXY(
-          (-axis.left + axis.right) * SPEED,
-          (-axis.up + axis.down) * SPEED,
-        );
-        this.animation =
-          Boolean(-axis.left + axis.right) || Boolean(-axis.up + axis.down)
-            ? rat0Animations.walking
-            : rat0Animations.idle;
-      },
-      this,
-    );
-    game.onPointerOver((isOver: boolean) => {
-      if (isOver) console.log("Mouse is over Rat");
+    game.Input().onAxis1Change((axis) => {
+      this.Spatial.velocity.setXY(
+        (-axis.left + axis.right) * SPEED,
+        (-axis.up + axis.down) * SPEED,
+      );
+      this.animation =
+        Boolean(-axis.left + axis.right) || Boolean(-axis.up + axis.down)
+          ? rat0Animations.walking
+          : rat0Animations.idle;
     }, this);
+    game.Input().onPointerOver(this, (isOver: boolean) => {
+      if (isOver) console.log("Mouse is over Rat");
+    });
   }
 
   onRender(game: Game, dt: number): void {
